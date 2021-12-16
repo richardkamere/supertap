@@ -11,10 +11,10 @@ class StkPushCallsAdmin(admin.ModelAdmin):
         'responseCode', 'stkStatus', 'paymentStatus','statusReason')
 
 
-admin.site.register(MpesaPayment)
+# admin.site.register(MpesaPayment)
 
-admin.site.register(MpesaCallBacks)
+# admin.site.register(MpesaCallBacks)
 
-admin.site.register(MpesaCalls)
+# admin.site.register(MpesaCalls)
 
 admin.site.register(StkPushCalls, StkPushCallsAdmin)
