@@ -9,5 +9,6 @@ urlpatterns = [
     path('c2b/validation', views.validation, name="validation"),
     path('c2b/callback', views.call_back, name="call_back"),
 
+
     path('check/auto_check_payment', views.auto_check_payment, name="auto_check_payment")
 ]
