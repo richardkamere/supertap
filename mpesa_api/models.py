@@ -29,6 +29,7 @@ class StkPushCalls(BaseModel):
     stkStatus = models.CharField(max_length=255, default="Success")
     paymentStatus = models.CharField(max_length=255, default="Pending")
     statusReason = models.CharField(max_length=255, default="not know")
+    txnId = models.CharField(max_length=255, default="1212")
 
 
 

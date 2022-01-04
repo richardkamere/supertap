@@ -20,15 +20,19 @@ def getAccessToken(request):
     validated_mpesa_access_token = mpesa_access_token['access_token']
     return HttpResponse(validated_mpesa_access_token)
 
+@csrf_exempt
+def auto_check_payment(request):
+    mpesa_request = json.loads(request.body)
+    print(mpesa_request)
+    mpesaStatus = StkPushCalls.objects.get(txnId="1212")
+    print(mpesaStatus)
+
 
 @csrf_exempt
 def lipa_na_mpesa_online(request):
     stkRequest = json.loads(request.body)
-
     access_token = MpesaAccessToken.validated_mpesa_access_token
-
     api_url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
-
     headers = {"Authorization": "Bearer %s" % access_token}
 
     request = {
@@ -46,7 +50,6 @@ def lipa_na_mpesa_online(request):
     }
 
     response = requests.post(api_url, json=request, headers=headers)
-
     print(response.status_code)
     print(response.text)
     if response.status_code == 200:
@@ -66,7 +69,8 @@ def lipa_na_mpesa_online(request):
             customerMessage=response.json()['CustomerMessage'],
             stkStatus="Success",
             paymentStatus="Pending",
-            statusReason=response.json()['ResponseDescription']
+            statusReason=response.json()['ResponseDescription'],
+            txnId=stkRequest['txnId']
         )
 
         stkRequest.save()
