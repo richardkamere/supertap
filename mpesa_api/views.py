@@ -1,10 +1,10 @@
 import json
 
 import requests
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
-from pyfcm import FCMNotification
 from requests.auth import HTTPBasicAuth
 
 from mpesa_api.models import StkPushCalls
@@ -20,12 +20,28 @@ def getAccessToken(request):
     validated_mpesa_access_token = mpesa_access_token['access_token']
     return HttpResponse(validated_mpesa_access_token)
 
+
 @csrf_exempt
 def auto_check_payment(request):
-    mpesa_request = json.loads(request.body)
-    print(mpesa_request)
-    mpesaStatus = StkPushCalls.objects.get(txnId="1212")
-    print(mpesaStatus)
+    checkRequest = json.loads(request.body)
+
+    try:
+        data = StkPushCalls.objects.get(txnId=checkRequest['txnId'])
+        context = {
+            "stkStatus": data.stkStatus,
+            "customerMessage": data.customerMessage,
+            "paymentStatus":data.paymentStatus
+        }
+        return JsonResponse(dict(context))
+
+    except ObjectDoesNotExist:
+        context = {
+            "stkStatus": "Stk Not Received",
+            "customerMessage": "Stk Not Received, Please Tap Again",
+            "paymentStatus": "Stk Not Received, Request the customer to Tap Again"
+        }
+        return JsonResponse(dict(context))
+
 
 
 @csrf_exempt
@@ -50,10 +66,9 @@ def lipa_na_mpesa_online(request):
     }
 
     response = requests.post(api_url, json=request, headers=headers)
-    print(response.status_code)
-    print(response.text)
+
     if response.status_code == 200:
-        stkRequest = StkPushCalls(
+        stkRequestV1 = StkPushCalls(
             businessShortCode=request['BusinessShortCode'],
             transactionType=request['TransactionType'],
             amount=request['Amount'],
@@ -68,16 +83,18 @@ def lipa_na_mpesa_online(request):
             responseDescription=response.json()['ResponseDescription'],
             customerMessage=response.json()['CustomerMessage'],
             stkStatus="Success",
-            paymentStatus="Pending",
+            paymentStatus="Stk sent, Waiting for customer to complete payment",
             statusReason=response.json()['ResponseDescription'],
             txnId=stkRequest['txnId']
         )
 
-        stkRequest.save()
-        print("success")
+        if not StkPushCalls.objects.filter(txnId=stkRequest['txnId']).exists():
+            stkRequestV1.save()
+        else:
+            print("not saved ")
 
     else:
-        stkRequest = StkPushCalls(
+        stkRequestV1 = StkPushCalls(
             businessShortCode=request['BusinessShortCode'],
             transactionType=request['TransactionType'],
             amount=request['Amount'],
@@ -92,12 +109,15 @@ def lipa_na_mpesa_online(request):
             responseDescription=response.json()['errorMessage'],
             customerMessage=response.json()['errorMessage'],
             stkStatus="Failed",
-            paymentStatus="Pending",
-            statusReason=response.json()['ResponseDescription']
+            paymentStatus=response.json()['ResponseDescription'],
+            statusReason=response.json()['ResponseDescription'],
+            txnId=stkRequest['txnId']
         )
 
-        stkRequest.save()
-        print("failed")
+        txnId = StkPushCalls.objects.all().filter(stkRequest['txnId']).exists()
+
+        if not txnId.exists():
+            stkRequestV1.save()
 
     return HttpResponse(response.text)
 
@@ -135,7 +155,6 @@ def confirmation(request):
     global mpesaReceiptNumber, transactionDate
 
     mpesa_body = request.body.decode('utf-8')
-    print(mpesa_body)
     mpesa_payment = json.loads(mpesa_body)
     mpesaPayment = mpesa_payment['Body']
     stkCallback = mpesaPayment['stkCallback']

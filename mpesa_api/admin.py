@@ -1,12 +1,11 @@
 from django.contrib import admin
 
 # Register your models here.
-from mpesa_api.models import MpesaPayment, MpesaCallBacks, MpesaCalls, StkPushCalls
-
+from mpesa_api.models import StkPushCalls
 
 class StkPushCallsAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'businessShortCode', 'accountReference', 'amount', 'phoneNumber', 'merchantRequestId',
+        'id', 'businessShortCode', 'txnId', 'accountReference', 'amount', 'phoneNumber', 'merchantRequestId',
         'checkoutRequestId',
         'responseCode', 'stkStatus', 'paymentStatus','statusReason')
 
