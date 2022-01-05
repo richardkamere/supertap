@@ -26,7 +26,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*', 'supertapdev.pesapalhosting.com']
 
-CSRF_TRUSTED_ORIGINS = ['supertapdev.pesapalhosting.com', 'http://supertapdev.pesapalhosting.com']
+CSRF_TRUSTED_ORIGINS = ['http://supertapdev.pesapalhosting.com']
 
 # Application definition
 
