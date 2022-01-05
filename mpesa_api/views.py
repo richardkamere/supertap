@@ -20,7 +20,6 @@ def getAccessToken(request):
     validated_mpesa_access_token = mpesa_access_token['access_token']
     return HttpResponse(validated_mpesa_access_token)
 
-
 @csrf_exempt
 def auto_check_payment(request):
     checkRequest = json.loads(request.body)
