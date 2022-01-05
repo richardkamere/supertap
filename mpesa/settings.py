@@ -24,9 +24,9 @@ SECRET_KEY = 'django-insecure-k7$6^wx5%=gqy(8hs(^38n_3+))llx7k^sp5-)&s+^*%3p6epp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*','supertapdev.pesapalhosting.com']
+ALLOWED_HOSTS = ['*', 'supertapdev.pesapalhosting.com']
 
-CORS_ORIGIN_ALLOW_ALL = True
+CSRF_TRUSTED_ORIGINS = ['supertapdev.pesapalhosting.com', 'http://supertapdev.pesapalhosting.com']
 
 # Application definition
 
