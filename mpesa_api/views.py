@@ -46,7 +46,7 @@ def auto_check_payment(request):
             "statusReason": "Stk Not Received, Request the customer to Tap Again",
             "txnRefNo": "ACSVXCBDS",
             "customerName": "John Doe",
-            "phoneNumber": "0700123456",
+            "phoneNumber": "0700 0000000",
             "paidAmount": "0.00"
         }
         return JsonResponse(dict(context))
