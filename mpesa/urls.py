@@ -38,6 +38,6 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/v1/', include('mpesa_api.urls')),
-    path('admin/', admin.site.urls),
+    path('', admin.site.urls),
 
 ]
