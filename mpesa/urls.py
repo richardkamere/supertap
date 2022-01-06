@@ -15,12 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
-from mpesa_api import views
+from rest_framework_swagger.views import get_swagger_view
+schema_view = get_swagger_view(title='Pastebin API')
 
 admin.site.site_header = 'Super Tap Admin'
+admin.site.site_title = "SuperTap Portal"
+admin.site.index_title = "Welcome to super tap admin portal"
+schema_view = get_swagger_view(title='SuperTap API')
 
 urlpatterns = [
+    path('swagger/', schema_view),
     path('api/v1/', include('mpesa_api.urls')),
     path('admin/', admin.site.urls),
 ]

@@ -31,6 +31,9 @@ class StkPushCalls(BaseModel):
     statusReason = models.CharField(max_length=255, default="not know")
     txnId = models.CharField(max_length=255, default="1212")
 
+    class Meta:
+        verbose_name_plural = "STK PAYMENTS"
+        verbose_name = "transaction"
 
 
 # M-pesa Payment models
@@ -60,7 +63,7 @@ class MpesaPayment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0.0)
     mpesaReceiptNumber = models.CharField(max_length=100, blank=True)
     transactionDate = models.IntegerField(blank=True)
-    phoneNumber = models.CharField(max_length=100,blank=True)
+    phoneNumber = models.CharField(max_length=100, blank=True)
 
     class Meta:
         verbose_name = 'Mpesa Payment'

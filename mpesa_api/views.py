@@ -20,6 +20,7 @@ def getAccessToken(request):
     validated_mpesa_access_token = mpesa_access_token['access_token']
     return HttpResponse(validated_mpesa_access_token)
 
+
 @csrf_exempt
 def auto_check_payment(request):
     checkRequest = json.loads(request.body)
@@ -29,7 +30,8 @@ def auto_check_payment(request):
         context = {
             "stkStatus": data.stkStatus,
             "customerMessage": data.customerMessage,
-            "paymentStatus":data.paymentStatus
+            "paymentStatus": data.paymentStatus,
+            "statusReason": data.stkStatus
         }
         return JsonResponse(dict(context))
 
@@ -37,10 +39,10 @@ def auto_check_payment(request):
         context = {
             "stkStatus": "Stk Not Received",
             "customerMessage": "Stk Not Received, Please Tap Again",
-            "paymentStatus": "Stk Not Received, Request the customer to Tap Again"
+            "paymentStatus": "Failed",
+            "statusReason": "Stk Not Received, Request the customer to Tap Again"
         }
         return JsonResponse(dict(context))
-
 
 
 @csrf_exempt
@@ -82,8 +84,8 @@ def lipa_na_mpesa_online(request):
             responseDescription=response.json()['ResponseDescription'],
             customerMessage=response.json()['CustomerMessage'],
             stkStatus="Success",
-            paymentStatus="Stk sent, Waiting for customer to complete payment",
-            statusReason=response.json()['ResponseDescription'],
+            paymentStatus="Pending",
+            statusReason="Stk sent, Waiting for customer to complete payment",
             txnId=stkRequest['txnId']
         )
 
