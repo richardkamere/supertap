@@ -123,13 +123,15 @@ def lipa_na_mpesa_online(request):
             merchantRequestId=response.json()['requestId'],
             checkoutRequestId=response.json()['requestId'],
             responseCode=response.json()['errorCode'],
-            responseDescription=response.json()['errorMessage'],
-            customerMessage=response.json()['errorMessage'],
+            responseDescription="Failed to complete stk request",
+            customerMessage="Failed to complete stk request",
             stkStatus="Failed",
-            paymentStatus=response.json()['errorMessage'],
-            statusReason=response.json()['errorMessage'],
+            paymentStatus="Failed to complete stk request",
+            statusReason="Failed to complete stk request",
             txnId=stkRequest['txnId']
         )
+
+        print(response.json()['errorMessage'])
 
         txnId = StkPushCalls.objects.all().filter(stkRequest['txnId']).exists()
 
