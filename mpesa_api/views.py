@@ -31,7 +31,10 @@ def auto_check_payment(request):
             "stkStatus": data.stkStatus,
             "customerMessage": data.customerMessage,
             "paymentStatus": data.paymentStatus,
-            "statusReason": data.stkStatus
+            "statusReason": data.statusReason,
+            "txnRefNo": data.txnRefNo,
+            "customerName": data.customerName,
+            "paidAmount": data.amount
         }
         return JsonResponse(dict(context))
 
@@ -40,7 +43,11 @@ def auto_check_payment(request):
             "stkStatus": "Stk Not Received",
             "customerMessage": "Stk Not Received, Please Tap Again",
             "paymentStatus": "Failed",
-            "statusReason": "Stk Not Received, Request the customer to Tap Again"
+            "statusReason": "Stk Not Received, Request the customer to Tap Again",
+            "txnRefNo": "ACSVXCBDS",
+            "customerName": "John Doe",
+            "phoneNumber": "0700123456",
+            "paidAmount": "0.00"
         }
         return JsonResponse(dict(context))
 

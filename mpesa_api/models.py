@@ -26,10 +26,12 @@ class StkPushCalls(BaseModel):
     responseCode = models.CharField(max_length=255)
     responseDescription = models.CharField(max_length=255)
     customerMessage = models.CharField(max_length=255)
+    customerName = models.CharField(max_length=255, default="John Due")
     stkStatus = models.CharField(max_length=255, default="Success")
     paymentStatus = models.CharField(max_length=255, default="Pending")
     statusReason = models.CharField(max_length=255, default="not know")
     txnId = models.CharField(max_length=255, default="1212")
+    txnRefNo = models.CharField(max_length=255, default="QA637JAIMR")
 
     class Meta:
         verbose_name_plural = "STK PAYMENTS"
