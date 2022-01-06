@@ -1,12 +1,19 @@
 import json
 
 import requests
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
 from requests.auth import HTTPBasicAuth
+from rest_framework import viewsets
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import AllowAny
 
+from mpesa_api.serializers import UserSerializer
+
+User = get_user_model()
 from mpesa_api.models import StkPushCalls
 from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword
 
@@ -118,8 +125,8 @@ def lipa_na_mpesa_online(request):
             responseDescription=response.json()['errorMessage'],
             customerMessage=response.json()['errorMessage'],
             stkStatus="Failed",
-            paymentStatus=response.json()['ResponseDescription'],
-            statusReason=response.json()['ResponseDescription'],
+            paymentStatus=response.json()['errorMessage'],
+            statusReason=response.json()['errorMessage'],
             txnId=stkRequest['txnId']
         )
 
@@ -213,3 +220,9 @@ def confirmation(request):
         }
         print(dict(context))
         return JsonResponse(dict(context))
+
+
+@permission_classes((AllowAny,))
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
