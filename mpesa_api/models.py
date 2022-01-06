@@ -1,4 +1,5 @@
 import json
+from enum import Enum
 
 import requests
 from django.db import models
@@ -27,7 +28,7 @@ class StkPushCalls(BaseModel):
     responseDescription = models.CharField(max_length=255)
     customerMessage = models.CharField(max_length=255)
     customerName = models.CharField(max_length=255, default="John Due")
-    stkStatus = models.CharField(max_length=255, default="Success")
+    stkStatus = models.CharField(max_length=255, default="Failed")
     paymentStatus = models.CharField(max_length=255, default="Pending")
     statusReason = models.CharField(max_length=255, default="not know")
     txnId = models.CharField(max_length=255, default="1212")
