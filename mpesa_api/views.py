@@ -6,9 +6,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
+from drf_yasg import renderers
 from requests.auth import HTTPBasicAuth
 from rest_framework import viewsets
-from rest_framework.decorators import permission_classes
+from rest_framework.decorators import permission_classes, api_view, renderer_classes
 from rest_framework.permissions import AllowAny
 
 from mpesa_api.serializers import UserSerializer
@@ -18,6 +19,8 @@ from mpesa_api.models import StkPushCalls
 from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword
 
 @csrf_exempt
+@api_view(['GET'])
+@renderer_classes([renderers.OpenAPIRenderer, renderers.SwaggerUIRenderer])
 def getAccessToken(request):
     consumer_key = '6Gx2HNSCzyOMLLSCE1pCnDck6dGtR9bD'
     consumer_secret = 'GnPicfxhwfWWg0kY'
@@ -29,6 +32,8 @@ def getAccessToken(request):
 
 
 @csrf_exempt
+@api_view(['GET', 'POST'])
+@renderer_classes([renderers.OpenAPIRenderer, renderers.SwaggerUIRenderer])
 def auto_check_payment(request):
     checkRequest = json.loads(request.body)
 
@@ -61,6 +66,8 @@ def auto_check_payment(request):
 
 
 @csrf_exempt
+@api_view(['GET', 'POST'])
+@renderer_classes([renderers.OpenAPIRenderer, renderers.SwaggerUIRenderer])
 def lipa_na_mpesa_online(request):
     stkRequest = json.loads(request.body)
     access_token = MpesaAccessToken.validated_mpesa_access_token
@@ -139,6 +146,8 @@ def lipa_na_mpesa_online(request):
 
 
 @csrf_exempt
+@api_view(['GET', 'POST'])
+@renderer_classes([renderers.OpenAPIRenderer, renderers.SwaggerUIRenderer])
 def register_urls(request):
     access_token = MpesaAccessToken.validated_mpesa_access_token
     api_url = "https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl"
@@ -167,6 +176,8 @@ def validation(request):
 
 
 @csrf_exempt
+@api_view(['GET', 'POST'])
+@renderer_classes([renderers.OpenAPIRenderer, renderers.SwaggerUIRenderer])
 def confirmation(request):
     global mpesaReceiptNumber, transactionDate
 
