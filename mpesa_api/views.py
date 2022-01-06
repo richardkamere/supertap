@@ -17,7 +17,7 @@ User = get_user_model()
 from mpesa_api.models import StkPushCalls
 from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword
 
-
+@csrf_exempt
 def getAccessToken(request):
     consumer_key = '6Gx2HNSCzyOMLLSCE1pCnDck6dGtR9bD'
     consumer_secret = 'GnPicfxhwfWWg0kY'
