@@ -34,6 +34,7 @@ def auto_check_payment(request):
             "statusReason": data.statusReason,
             "txnRefNo": data.txnRefNo,
             "customerName": data.customerName,
+            "phoneNumber": data.phoneNumber,
             "paidAmount": data.amount
         }
         return JsonResponse(dict(context))
