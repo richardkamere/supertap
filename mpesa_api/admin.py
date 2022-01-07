@@ -14,7 +14,7 @@ class StkPushCallsAdmin(admin.ModelAdmin):
 
     list_display = (
         'id', 'businessShortCode', 'txnId', 'accountReference', 'amount', 'phoneNumber', 'merchantRequestId',
-        'checkoutRequestId', 'stkStatus', 'paymentStatus', 'statusReason')
+        'checkoutRequestId', 'stkStatus', 'paymentStatus', 'txnRefNo', 'retryTimes', 'statusReason')
 
 
 admin.site.register(StkPushCalls, StkPushCallsAdmin)

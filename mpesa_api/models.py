@@ -33,6 +33,8 @@ class StkPushCalls(BaseModel):
     statusReason = models.CharField(max_length=255, default="not know")
     txnId = models.CharField(max_length=255, default="1212")
     txnRefNo = models.CharField(max_length=255, default="QA637JAIMR")
+    transactionDate = models.DateTimeField(auto_now=True)
+    retryTimes = models.IntegerField(default=0)
 
     class Meta:
         verbose_name_plural = "STK PAYMENTS"

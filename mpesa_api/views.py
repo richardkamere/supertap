@@ -18,6 +18,7 @@ User = get_user_model()
 from mpesa_api.models import StkPushCalls
 from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword
 
+
 @csrf_exempt
 def getAccessToken(request):
     consumer_key = '6Gx2HNSCzyOMLLSCE1pCnDck6dGtR9bD'
@@ -35,17 +36,31 @@ def auto_check_payment(request):
 
     try:
         data = StkPushCalls.objects.get(txnId=checkRequest['txnId'])
-        context = {
-            "stkStatus": data.stkStatus,
-            "customerMessage": data.customerMessage,
-            "paymentStatus": data.paymentStatus,
-            "statusReason": data.statusReason,
-            "txnRefNo": data.txnRefNo,
-            "customerName": data.customerName,
-            "phoneNumber": data.phoneNumber,
-            "paidAmount": data.amount
-        }
-        return JsonResponse(dict(context))
+        if data.paymentStatus == "Success":
+            context = {
+                "stkStatus": data.stkStatus,
+                "customerMessage": data.customerMessage,
+                "paymentStatus": data.paymentStatus,
+                "statusReason": data.statusReason,
+                "txnRefNo": data.txnRefNo,
+                "customerName": data.customerName,
+                "phoneNumber": data.phoneNumber,
+                "paidAmount": data.amount
+            }
+            return JsonResponse(dict(context))
+
+        else:
+            context = {
+                "stkStatus": data.stkStatus,
+                "customerMessage": "Stk Not Received, Please Tap Again",
+                "paymentStatus": "Failed",
+                "statusReason": "Stk Not Received, Request the customer to Tap Again",
+                "txnRefNo": "ACSVXCBDS",
+                "customerName": "John Doe",
+                "phoneNumber": "0700 0000000",
+                "paidAmount": "0.00"
+            }
+            return JsonResponse(dict(context))
 
     except ObjectDoesNotExist:
         context = {
@@ -77,69 +92,83 @@ def lipa_na_mpesa_online(request):
         "PartyA": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
         "PartyB": LipanaMpesaPpassword.Business_short_code,
         "PhoneNumber": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
-        "CallBackURL": "https://cfc6-197-254-46-90.ngrok.io/api/v1/c2b/confirmation",
+        "CallBackURL": "https://supertapdev.pesapalhosting.com/api/v1/c2b/confirmation",
         "AccountReference": stkRequest['merchantName'],
         "TransactionDesc": "PESAPAL SABI"
     }
 
-    response = requests.post(api_url, json=request, headers=headers)
+    # check if the transaction exists
+    if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'],paymentStatus="Success").exists():
+        response = requests.post(api_url, json=request, headers=headers)
+        print(response.text)
 
-    print(response.text)
-    if response.status_code == 200:
-        stkRequestV1 = StkPushCalls(
-            businessShortCode=request['BusinessShortCode'],
-            transactionType=request['TransactionType'],
-            amount=request['Amount'],
-            partyA=request['PartyA'],
-            partyB=request['PartyB'],
-            phoneNumber=request['PhoneNumber'],
-            accountReference=request['AccountReference'],
-            transactionDesc=request['TransactionDesc'],
-            merchantRequestId=response.json()['MerchantRequestID'],
-            checkoutRequestId=response.json()['CheckoutRequestID'],
-            responseCode=response.json()['ResponseCode'],
-            responseDescription=response.json()['ResponseDescription'],
-            customerMessage=response.json()['CustomerMessage'],
-            stkStatus="Success",
-            paymentStatus="Pending",
-            statusReason="Stk sent, Waiting for customer to complete payment",
-            txnId=stkRequest['txnId']
-        )
+        if response.status_code == 200:
+            stkRequestV1 = StkPushCalls(
+                businessShortCode=request['BusinessShortCode'],
+                transactionType=request['TransactionType'],
+                amount=request['Amount'],
+                partyA=request['PartyA'],
+                partyB=request['PartyB'],
+                phoneNumber=request['PhoneNumber'],
+                accountReference=request['AccountReference'],
+                transactionDesc=request['TransactionDesc'],
+                merchantRequestId=response.json()['MerchantRequestID'],
+                checkoutRequestId=response.json()['CheckoutRequestID'],
+                responseCode=response.json()['ResponseCode'],
+                responseDescription=response.json()['ResponseDescription'],
+                customerMessage=response.json()['CustomerMessage'],
+                stkStatus="Success",
+                paymentStatus="Pending",
+                statusReason="Stk sent, Waiting for customer to complete payment",
+                txnId=stkRequest['txnId']
+            )
 
-        if not StkPushCalls.objects.filter(txnId=stkRequest['txnId']).exists():
-            stkRequestV1.save()
+            if not StkPushCalls.objects.filter(txnId=stkRequest['txnId']).exists():
+                stkRequestV1.save()
+            else:
+                originalCall = StkPushCalls.objects.get(txnId=stkRequest['txnId'])
+                originalCall.checkoutRequestId = response.json()['CheckoutRequestID']
+                originalCall.merchantRequestId = response.json()['CheckoutRequestID']
+                originalCall.retryTimes = originalCall.retryTimes + 1
+                originalCall.save()
+                print("updated")
+
         else:
-            print("not saved ")
+            stkRequestV1 = StkPushCalls(
+                businessShortCode=request['BusinessShortCode'],
+                transactionType=request['TransactionType'],
+                amount=request['Amount'],
+                partyA=request['PartyA'],
+                partyB=request['PartyB'],
+                phoneNumber=request['PhoneNumber'],
+                accountReference=request['AccountReference'],
+                transactionDesc=request['TransactionDesc'],
+                merchantRequestId=response.json()['requestId'],
+                checkoutRequestId=response.json()['requestId'],
+                responseCode=response.json()['errorCode'],
+                responseDescription="Failed to complete stk request",
+                customerMessage="Failed to complete stk request",
+                stkStatus="Failed",
+                paymentStatus="Failed to complete stk request",
+                statusReason="Failed to complete stk request",
+                txnId=stkRequest['txnId']
+            )
 
+            print(response.json()['errorMessage'])
+
+            txnId = StkPushCalls.objects.all().filter(stkRequest['txnId']).exists()
+
+            if not txnId.exists():
+                stkRequestV1.save()
+
+        return HttpResponse(response.text)
     else:
-        stkRequestV1 = StkPushCalls(
-            businessShortCode=request['BusinessShortCode'],
-            transactionType=request['TransactionType'],
-            amount=request['Amount'],
-            partyA=request['PartyA'],
-            partyB=request['PartyB'],
-            phoneNumber=request['PhoneNumber'],
-            accountReference=request['AccountReference'],
-            transactionDesc=request['TransactionDesc'],
-            merchantRequestId=response.json()['requestId'],
-            checkoutRequestId=response.json()['requestId'],
-            responseCode=response.json()['errorCode'],
-            responseDescription="Failed to complete stk request",
-            customerMessage="Failed to complete stk request",
-            stkStatus="Failed",
-            paymentStatus="Failed to complete stk request",
-            statusReason="Failed to complete stk request",
-            txnId=stkRequest['txnId']
-        )
+        context = {
+            "ResponseCode": 1,
+            "CustomerMessage": "Transaction complete, Please Tap your phone on the terminal again"
+        }
+        return JsonResponse(dict(context))
 
-        print(response.json()['errorMessage'])
-
-        txnId = StkPushCalls.objects.all().filter(stkRequest['txnId']).exists()
-
-        if not txnId.exists():
-            stkRequestV1.save()
-
-    return HttpResponse(response.text)
 
 
 @csrf_exempt
@@ -149,8 +178,8 @@ def register_urls(request):
     headers = {"Authorization": "Bearer %s" % access_token}
     options = {"ShortCode": LipanaMpesaPpassword.Test_c2b_shortcode,
                "ResponseType": "Completed",
-               "ConfirmationURL": "https://cfc6-197-254-46-90.ngrok.io/api/v1/c2b/confirmation",
-               "ValidationURL": "https://cfc6-197-254-46-90.ngrok.io/api/v1/c2b/validation"}
+               "ConfirmationURL": "https://supertapdev.pesapalhosting.com/api/v1/c2b/confirmation",
+               "ValidationURL": "https://supertapdev.pesapalhosting.com/api/v1/c2b/validation"}
     response = requests.post(api_url, json=options, headers=headers)
     return HttpResponse(response.text)
 
@@ -172,8 +201,66 @@ def validation(request):
 
 @csrf_exempt
 def confirmation(request):
-    confirmationText = json.loads(request.body)
-    print(confirmationText)
+    mpesa_body = request.body.decode('utf-8')
+    mpesa_payment = json.loads(mpesa_body)
+    mpesaPayment = mpesa_payment['Body']
+    stkCallback = mpesaPayment['stkCallback']
+
+    if stkCallback.__contains__('CallbackMetadata'):
+
+        callbackMetadata = stkCallback['CallbackMetadata']
+        merchantRequestId = stkCallback['MerchantRequestID']
+        checkoutRequestId = stkCallback['CheckoutRequestID']
+        items = callbackMetadata['Item']
+
+        amount = None
+        mpesaReceiptNumber = None
+        transactionDate = None
+        phoneNumber = None
+
+        for item in items:
+            name = item['Name']
+            value = "Nil"
+            if 'Value' in item:
+                value = item['Value']
+
+            if name == "Amount":
+                amount = value
+            elif name == "MpesaReceiptNumber":
+                mpesaReceiptNumber = value
+            elif name == "TransactionDate":
+                transactionDate = value
+            elif name == "PhoneNumber":
+                phoneNumber = value
+
+        stkRequest = StkPushCalls.objects.get(checkoutRequestId=checkoutRequestId)
+        stkRequest.amount = amount
+        stkRequest.phoneNumber = phoneNumber
+        stkRequest.merchantRequestId = merchantRequestId
+        stkRequest.checkoutRequestId = checkoutRequestId
+        stkRequest.customerMessage = "Payment received successfully"
+        stkRequest.stkStatus = "Success"
+        stkRequest.paymentStatus = "Success"
+        stkRequest.statusReason = "Payment received successfully"
+        stkRequest.txnRefNo = mpesaReceiptNumber
+        stkRequest.transactionDate = transactionDate
+        stkRequest.save()
+
+        context = {
+            "ResultCode": stkCallback['ResultCode'],
+            "ResultDesc": stkCallback['ResultDesc']
+        }
+
+        print(dict(context))
+
+        return JsonResponse(dict(context))
+    else:
+        context = {
+            "ResultCode": stkCallback['ResultCode'],
+            "ResultDesc": stkCallback['ResultDesc']
+        }
+        print(dict(context))
+        return JsonResponse(dict(context))
 
 
 @permission_classes((AllowAny,))
