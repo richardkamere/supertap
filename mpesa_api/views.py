@@ -36,8 +36,7 @@ def auto_check_payment(request):
 
     try:
         data = StkPushCalls.objects.get(txnId=checkRequest['txnId'])
-        if data.paymentStatus == "Success":
-            context = {
+        context = {
                 "stkStatus": data.stkStatus,
                 "customerMessage": data.customerMessage,
                 "paymentStatus": data.paymentStatus,
@@ -47,21 +46,7 @@ def auto_check_payment(request):
                 "phoneNumber": data.phoneNumber,
                 "paidAmount": data.amount
             }
-            return JsonResponse(dict(context))
-
-        else:
-            context = {
-                "stkStatus": data.stkStatus,
-                "customerMessage": "Stk Not Received, Please Tap Again",
-                "paymentStatus": "Failed",
-                "statusReason": "Stk Not Received, Request the customer to Tap Again",
-                "txnRefNo": "ACSVXCBDS",
-                "customerName": "John Doe",
-                "phoneNumber": "0700 0000000",
-                "paidAmount": "0.00"
-            }
-            return JsonResponse(dict(context))
-
+        return JsonResponse(dict(context))
     except ObjectDoesNotExist:
         context = {
             "stkStatus": "Stk Not Received",
@@ -178,8 +163,8 @@ def register_urls(request):
     headers = {"Authorization": "Bearer %s" % access_token}
     options = {"ShortCode": LipanaMpesaPpassword.Test_c2b_shortcode,
                "ResponseType": "Completed",
-               "ConfirmationURL": "https://supertapdev.pesapalhosting.com/api/v1/c2b/confirmation",
-               "ValidationURL": "https://supertapdev.pesapalhosting.com/api/v1/c2b/validation"}
+               "ConfirmationURL": "https://cfc6-197-254-46-90.ngrok.io/api/v1/c2b/confirmation",
+               "ValidationURL": "https://cfc6-197-254-46-90.ngrok.io/api/v1/c2b/validation"}
     response = requests.post(api_url, json=options, headers=headers)
     return HttpResponse(response.text)
 
