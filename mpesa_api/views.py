@@ -53,7 +53,7 @@ def auto_check_payment(request):
             # access_token = MpesaAccessToken.validated_mpesa_access_token
             # api_url = MpesaC2bCredential.check_payment_status_url
             # headers = {"Authorization": "Bearer %s" % access_token}
-            #
+
             # request = {
             #     "CommandID": LipanaMpesaPpassword.customerBuyGoodsOnline,
             #     "Amount": data.amount,
