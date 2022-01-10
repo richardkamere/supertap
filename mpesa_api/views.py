@@ -16,14 +16,14 @@ from mpesa_api.serializers import UserSerializer
 
 User = get_user_model()
 from mpesa_api.models import StkPushCalls
-from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword
+from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword, MpesaC2bCredential
 
 
 @csrf_exempt
 def getAccessToken(request):
-    consumer_key = '6Gx2HNSCzyOMLLSCE1pCnDck6dGtR9bD'
-    consumer_secret = 'GnPicfxhwfWWg0kY'
-    api_URL = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+    consumer_key = MpesaC2bCredential.consumer_key
+    consumer_secret = MpesaC2bCredential.consumer_secret
+    api_URL = MpesaC2bCredential.access_token_url;
     r = requests.get(api_URL, auth=HTTPBasicAuth(consumer_key, consumer_secret))
     mpesa_access_token = json.loads(r.text)
     validated_mpesa_access_token = mpesa_access_token['access_token']
@@ -33,9 +33,10 @@ def getAccessToken(request):
 @csrf_exempt
 def auto_check_payment(request):
     checkRequest = json.loads(request.body)
+    print(checkRequest)
 
     try:
-        data = StkPushCalls.objects.get(txnId=checkRequest['txnId'])
+        data = StkPushCalls.objects.filter(txnId=checkRequest['txnId']).order_by('-id')[0]
         if data.paymentStatus == "Success":
             context = {
                 "stkStatus": data.stkStatus,
@@ -50,13 +51,14 @@ def auto_check_payment(request):
             return JsonResponse(dict(context))
         else:
             access_token = MpesaAccessToken.validated_mpesa_access_token
-            api_url = "https://sandbox.safaricom.co.ke/pulltransactions/v1/query"
+            api_url = MpesaC2bCredential.check_payment_status_url
             headers = {"Authorization": "Bearer %s" % access_token}
+
             request = {
-                "ShortCode": LipanaMpesaPpassword.Business_short_code,
-                "StartDate": "2022-01-07 1:30:00",
-                "EndDate": "2022-01-07 2:30:00",
-                "OffSetValue": "0"
+                "CommandID": LipanaMpesaPpassword.customerBuyGoodsOnline,
+                "Amount": data.amount,
+                "Msisdn": data.phoneNumber,
+                "ShortCode": data.businessShortCode
             }
 
             response = requests.post(api_url, json=request, headers=headers)
@@ -69,7 +71,7 @@ def auto_check_payment(request):
                 "paymentStatus": data.paymentStatus,
                 "statusReason": data.statusReason,
                 "txnRefNo": data.txnRefNo,
-                "customerName": data.customerName,
+                "customerName": data.first_name,
                 "phoneNumber": data.phoneNumber,
                 "paidAmount": data.amount
             }
@@ -81,7 +83,7 @@ def auto_check_payment(request):
             "customerMessage": "Stk Not Received, Please Tap Again",
             "paymentStatus": "Failed",
             "statusReason": "Stk Not Received, Request the customer to Tap Again",
-            "txnRefNo": "ACSVXCBDS",
+            "txnRefNo": "Nil",
             "customerName": "John Doe",
             "phoneNumber": "0700 0000000",
             "paidAmount": "0.00"
@@ -93,7 +95,7 @@ def auto_check_payment(request):
 def lipa_na_mpesa_online(request):
     stkRequest = json.loads(request.body)
     access_token = MpesaAccessToken.validated_mpesa_access_token
-    api_url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+    api_url = MpesaC2bCredential.stk_push_url
     headers = {"Authorization": "Bearer %s" % access_token}
 
     request = {
@@ -105,7 +107,7 @@ def lipa_na_mpesa_online(request):
         "PartyA": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
         "PartyB": LipanaMpesaPpassword.Business_short_code,
         "PhoneNumber": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
-        "CallBackURL": "https://1419-197-254-46-90.ngrok.io/api/v1/c2b/confirmation",
+        "CallBackURL": MpesaC2bCredential.stk_push_callback_url,
         "AccountReference": stkRequest['merchantName'],
         "TransactionDesc": "PESAPAL SABI"
     }
@@ -194,12 +196,16 @@ def lipa_na_mpesa_online(request):
 @csrf_exempt
 def register_urls(request):
     access_token = MpesaAccessToken.validated_mpesa_access_token
-    api_url = "https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl"
+    print(MpesaC2bCredential.api_URL)
+    print(access_token)
+
+    api_url = MpesaC2bCredential.register_url
     headers = {"Authorization": "Bearer %s" % access_token}
     options = {"ShortCode": LipanaMpesaPpassword.Test_c2b_shortcode,
                "ResponseType": "Completed",
-               "ConfirmationURL": "https://1419-197-254-46-90.ngrok.io/api/v1/c2b/confirmation",
-               "ValidationURL": "https://1419-197-254-46-90.ngrok.io/api/v1/c2b/validation"}
+               "ConfirmationURL": MpesaC2bCredential.confirmation_url,
+               "ValidationURL": MpesaC2bCredential.validation_url
+               }
     response = requests.post(api_url, json=options, headers=headers)
     return HttpResponse(response.text)
 
@@ -216,6 +222,36 @@ def validation(request):
         "ResultDesc": "Accepted"
     }
     print(" validation received ...")
+    return JsonResponse(dict(context))
+
+
+@csrf_exempt
+def c2b_confirmation(request):
+    mpesa_body = request.body.decode('utf-8')
+    mpesa_payment = json.loads(mpesa_body)
+
+    if not StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
+                                       businessShortCode=mpesa_payment['BusinessShortCode'],
+                                       paymentStatus="Success").order_by('-id')[0].exist():
+        originalCall = \
+            StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
+                                        businessShortCode=mpesa_payment['BusinessShortCode'],
+                                        paymentStatus="Success").order_by('-id')[0];
+
+        originalCall.first_name = mpesa_payment['FirstName']
+        originalCall.last_name = mpesa_payment['LastName']
+        originalCall.amount = mpesa_payment['TransAmount']
+        originalCall.txnRefNo = mpesa_payment['TransID']
+        originalCall.updated_at = mpesa_payment['TransTime']
+        originalCall.businessShortCode = mpesa_payment['BusinessShortCode']
+        originalCall.transactionType = mpesa_payment['TransactionType']
+        originalCall.transactionType = mpesa_payment['TransactionType']
+        originalCall.save()
+
+    context = {
+        "ResultCode": 0,
+        "ResultDesc": "Accepted"
+    }
     return JsonResponse(dict(context))
 
 
@@ -253,7 +289,7 @@ def confirmation(request):
             elif name == "PhoneNumber":
                 phoneNumber = value
 
-        stkRequest = StkPushCalls.objects.get(checkoutRequestId=checkoutRequestId)
+        stkRequest = StkPushCalls.objects.filter(checkoutRequestId=checkoutRequestId).order_by('-id')[0]
         stkRequest.amount = amount
         stkRequest.phoneNumber = phoneNumber
         stkRequest.merchantRequestId = merchantRequestId

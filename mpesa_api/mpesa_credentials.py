@@ -8,7 +8,17 @@ import base64
 class MpesaC2bCredential:
     consumer_key = '6Gx2HNSCzyOMLLSCE1pCnDck6dGtR9bD'
     consumer_secret = 'GnPicfxhwfWWg0kY'
-    api_URL = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+    safaricom_base_url = 'https://sandbox.safaricom.co.ke/'
+    api_URL = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
+
+    base_url = 'https://supertapdev.pesapalhosting.com/'
+    confirmation_url = base_url + 'api/v1/c2b/c2b_confirmation'
+    validation_url = base_url + 'api/v1/c2b/validation'
+    register_url = safaricom_base_url + 'mpesa/c2b/v1/registerurl'
+    access_token_url = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
+    check_payment_status_url = safaricom_base_url + 'mpesa/c2b/v1/simulate'
+    stk_push_url = safaricom_base_url+'mpesa/stkpush/v1/processrequest'
+    stk_push_callback_url = safaricom_base_url+'api/v1/c2b/confirmation'
 
 
 class MpesaAccessToken:
@@ -26,3 +36,5 @@ class LipanaMpesaPpassword:
     data_to_encode = Business_short_code + passkey + lipa_time
     online_password = base64.b64encode(data_to_encode.encode())
     decode_password = online_password.decode('utf-8')
+    customerBuyGoodsOnline = "CustomerBuyGoodsOnline"
+    customerPayBillOnline = "CustomerPayBillOnline"

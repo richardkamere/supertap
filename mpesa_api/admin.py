@@ -13,8 +13,7 @@ class StkPushCallsAdmin(admin.ModelAdmin):
         return False
 
     list_display = (
-        'id', 'businessShortCode', 'txnId', 'accountReference', 'amount', 'phoneNumber', 'merchantRequestId',
-        'checkoutRequestId', 'stkStatus', 'paymentStatus', 'txnRefNo', 'retryTimes', 'statusReason')
+        'id', 'businessShortCode', 'txnId', 'accountReference', 'amount', 'phoneNumber', 'stkStatus', 'paymentStatus', 'txnRefNo', 'retryTimes', 'statusReason')
 
 
 admin.site.register(StkPushCalls, StkPushCallsAdmin)
