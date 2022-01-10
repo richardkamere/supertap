@@ -36,7 +36,8 @@ def auto_check_payment(request):
 
     try:
         data = StkPushCalls.objects.get(txnId=checkRequest['txnId'])
-        context = {
+        if data.paymentStatus == "Success":
+            context = {
                 "stkStatus": data.stkStatus,
                 "customerMessage": data.customerMessage,
                 "paymentStatus": data.paymentStatus,
@@ -46,7 +47,34 @@ def auto_check_payment(request):
                 "phoneNumber": data.phoneNumber,
                 "paidAmount": data.amount
             }
-        return JsonResponse(dict(context))
+            return JsonResponse(dict(context))
+        else:
+            access_token = MpesaAccessToken.validated_mpesa_access_token
+            api_url = "https://sandbox.safaricom.co.ke/pulltransactions/v1/query"
+            headers = {"Authorization": "Bearer %s" % access_token}
+            request = {
+                "ShortCode": LipanaMpesaPpassword.Business_short_code,
+                "StartDate": "2022-01-07 1:30:00",
+                "EndDate": "2022-01-07 2:30:00",
+                "OffSetValue": "0"
+            }
+
+            response = requests.post(api_url, json=request, headers=headers)
+
+            print(response.text)
+
+            context = {
+                "stkStatus": data.stkStatus,
+                "customerMessage": data.customerMessage,
+                "paymentStatus": data.paymentStatus,
+                "statusReason": data.statusReason,
+                "txnRefNo": data.txnRefNo,
+                "customerName": data.customerName,
+                "phoneNumber": data.phoneNumber,
+                "paidAmount": data.amount
+            }
+            return JsonResponse(dict(context))
+
     except ObjectDoesNotExist:
         context = {
             "stkStatus": "Stk Not Received",
@@ -77,15 +105,14 @@ def lipa_na_mpesa_online(request):
         "PartyA": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
         "PartyB": LipanaMpesaPpassword.Business_short_code,
         "PhoneNumber": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
-        "CallBackURL": "https://supertapdev.pesapalhosting.com/api/v1/c2b/confirmation",
+        "CallBackURL": "https://1419-197-254-46-90.ngrok.io/api/v1/c2b/confirmation",
         "AccountReference": stkRequest['merchantName'],
         "TransactionDesc": "PESAPAL SABI"
     }
 
     # check if the transaction exists
-    if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'],paymentStatus="Success").exists():
+    if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
         response = requests.post(api_url, json=request, headers=headers)
-        print(response.text)
 
         if response.status_code == 200:
             stkRequestV1 = StkPushCalls(
@@ -111,12 +138,19 @@ def lipa_na_mpesa_online(request):
             if not StkPushCalls.objects.filter(txnId=stkRequest['txnId']).exists():
                 stkRequestV1.save()
             else:
-                originalCall = StkPushCalls.objects.get(txnId=stkRequest['txnId'])
+                originalCall = StkPushCalls.objects.filter(txnId=stkRequest['txnId']).order_by('-id')[0]
                 originalCall.checkoutRequestId = response.json()['CheckoutRequestID']
                 originalCall.merchantRequestId = response.json()['CheckoutRequestID']
                 originalCall.retryTimes = originalCall.retryTimes + 1
                 originalCall.save()
                 print("updated")
+
+            context = {
+                "ResponseCode": response.json()['ResponseCode'],
+                "CustomerMessage": response.json()['CustomerMessage']
+            }
+
+            return JsonResponse(dict(context))
 
         else:
             stkRequestV1 = StkPushCalls(
@@ -131,29 +165,30 @@ def lipa_na_mpesa_online(request):
                 merchantRequestId=response.json()['requestId'],
                 checkoutRequestId=response.json()['requestId'],
                 responseCode=response.json()['errorCode'],
-                responseDescription="Failed to complete stk request",
-                customerMessage="Failed to complete stk request",
+                responseDescription=response.json()['errorMessage'],
+                customerMessage=response.json()['errorMessage'],
                 stkStatus="Failed",
-                paymentStatus="Failed to complete stk request",
-                statusReason="Failed to complete stk request",
+                paymentStatus='Failed',
+                statusReason=response.json()['errorMessage'],
                 txnId=stkRequest['txnId']
             )
 
-            print(response.json()['errorMessage'])
-
-            txnId = StkPushCalls.objects.all().filter(stkRequest['txnId']).exists()
-
-            if not txnId.exists():
+            if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
                 stkRequestV1.save()
 
-        return HttpResponse(response.text)
+            context = {
+                "ResponseCode": 1,
+                "CustomerMessage": response.json()['errorMessage']
+            }
+
+            return JsonResponse(dict(context))
+
     else:
         context = {
             "ResponseCode": 1,
             "CustomerMessage": "Transaction complete, Please Tap your phone on the terminal again"
         }
         return JsonResponse(dict(context))
-
 
 
 @csrf_exempt
@@ -163,8 +198,8 @@ def register_urls(request):
     headers = {"Authorization": "Bearer %s" % access_token}
     options = {"ShortCode": LipanaMpesaPpassword.Test_c2b_shortcode,
                "ResponseType": "Completed",
-               "ConfirmationURL": "https://cfc6-197-254-46-90.ngrok.io/api/v1/c2b/confirmation",
-               "ValidationURL": "https://cfc6-197-254-46-90.ngrok.io/api/v1/c2b/validation"}
+               "ConfirmationURL": "https://1419-197-254-46-90.ngrok.io/api/v1/c2b/confirmation",
+               "ValidationURL": "https://1419-197-254-46-90.ngrok.io/api/v1/c2b/validation"}
     response = requests.post(api_url, json=options, headers=headers)
     return HttpResponse(response.text)
 
