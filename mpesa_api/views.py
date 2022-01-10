@@ -50,20 +50,20 @@ def auto_check_payment(request):
             }
             return JsonResponse(dict(context))
         else:
-            access_token = MpesaAccessToken.validated_mpesa_access_token
-            api_url = MpesaC2bCredential.check_payment_status_url
-            headers = {"Authorization": "Bearer %s" % access_token}
-
-            request = {
-                "CommandID": LipanaMpesaPpassword.customerBuyGoodsOnline,
-                "Amount": data.amount,
-                "Msisdn": data.phoneNumber,
-                "ShortCode": data.businessShortCode
-            }
-
-            response = requests.post(api_url, json=request, headers=headers)
-
-            print(response.text)
+            # access_token = MpesaAccessToken.validated_mpesa_access_token
+            # api_url = MpesaC2bCredential.check_payment_status_url
+            # headers = {"Authorization": "Bearer %s" % access_token}
+            #
+            # request = {
+            #     "CommandID": LipanaMpesaPpassword.customerBuyGoodsOnline,
+            #     "Amount": data.amount,
+            #     "Msisdn": data.phoneNumber,
+            #     "ShortCode": data.businessShortCode
+            # }
+            #
+            # response = requests.post(api_url, json=request, headers=headers)
+            #
+            # print(response.text)
 
             context = {
                 "stkStatus": data.stkStatus,
