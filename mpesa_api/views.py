@@ -9,9 +9,12 @@ from rest_framework import viewsets
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
 from mpesa_api.serializers import UserSerializer
+
 User = get_user_model()
 from mpesa_api.models import StkPushCalls
-from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword, MpesaC2bCredential
+from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword, MpesaC2bCredential, sendSuccessMessage, \
+    sendFailedMessage
+
 
 @csrf_exempt
 def auto_check_payment(request):
@@ -25,7 +28,7 @@ def auto_check_payment(request):
             "paymentStatus": data.paymentStatus,
             "statusReason": data.statusReason,
             "txnRefNo": data.txnRefNo,
-            "customerName": data.first_name+' '+data.last_name+' '+data.middle_name,
+            "customerName": data.first_name + ' ' + data.last_name + ' ' + data.middle_name,
             "phoneNumber": data.phoneNumber,
             "paidAmount": data.amount
         }
@@ -48,9 +51,9 @@ def auto_check_payment(request):
 def lipa_na_mpesa_online(request):
     stkRequest = json.loads(request.body)
     access_token = MpesaAccessToken().getAcessToken()
+    print(access_token)
     api_url = MpesaC2bCredential.stk_push_url
     headers = {"Authorization": "Bearer %s" % access_token}
-
     request = {
         "BusinessShortCode": LipanaMpesaPpassword.Business_short_code,
         "Password": LipanaMpesaPpassword.decode_password,
@@ -58,7 +61,7 @@ def lipa_na_mpesa_online(request):
         "TransactionType": "CustomerPayBillOnline",
         "Amount": stkRequest['amount'],
         "PartyA": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
-        "PartyB": LipanaMpesaPpassword.Business_short_code,
+        "PartyB": LipanaMpesaPpassword.Business_till_number,
         "PhoneNumber": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
         "CallBackURL": MpesaC2bCredential.stk_push_callback_url,
         "AccountReference": stkRequest['merchantName'],
@@ -68,6 +71,8 @@ def lipa_na_mpesa_online(request):
     # check if the transaction exists
     if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
         response = requests.post(api_url, json=request, headers=headers)
+
+        print(response.text)
 
         if response.status_code == 200:
             stkRequestV1 = StkPushCalls(
@@ -87,7 +92,8 @@ def lipa_na_mpesa_online(request):
                 stkStatus="Success",
                 paymentStatus="Pending",
                 statusReason="Stk sent, Waiting for customer to complete payment",
-                txnId=stkRequest['txnId']
+                txnId=stkRequest['txnId'],
+                firebase_token=stkRequest['firebaseToken']
             )
 
             if not StkPushCalls.objects.filter(txnId=stkRequest['txnId']).exists():
@@ -98,15 +104,12 @@ def lipa_na_mpesa_online(request):
                 originalCall.merchantRequestId = response.json()['CheckoutRequestID']
                 originalCall.retryTimes = originalCall.retryTimes + 1
                 originalCall.save()
-                print("updated")
-
             context = {
                 "ResponseCode": response.json()['ResponseCode'],
                 "CustomerMessage": response.json()['CustomerMessage']
             }
 
             return JsonResponse(dict(context))
-
         else:
             stkRequestV1 = StkPushCalls(
                 businessShortCode=request['BusinessShortCode'],
@@ -114,7 +117,7 @@ def lipa_na_mpesa_online(request):
                 amount=request['Amount'],
                 partyA=request['PartyA'],
                 partyB=request['PartyB'],
-                phoneNumber=request['PhoneNumber'],
+                phoneNumber="0702931540",
                 accountReference=request['AccountReference'],
                 transactionDesc=request['TransactionDesc'],
                 merchantRequestId=response.json()['requestId'],
@@ -125,9 +128,11 @@ def lipa_na_mpesa_online(request):
                 stkStatus="Failed",
                 paymentStatus='Failed',
                 statusReason=response.json()['errorMessage'],
-                txnId=stkRequest['txnId']
+                txnId=stkRequest['txnId'],
+                firebase_token=stkRequest['firebaseToken']
             )
-
+            sendFailedMessage(message=response.json()['errorMessage'],
+                                                  device_id=stkRequestV1.firebase_token)
             if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
                 stkRequestV1.save()
 
@@ -152,7 +157,7 @@ def register_urls(request):
 
     api_url = MpesaC2bCredential.register_url
     headers = {"Authorization": "Bearer %s" % access_token}
-    options = {"ShortCode": LipanaMpesaPpassword.Test_c2b_shortcode,
+    options = {"ShortCode": LipanaMpesaPpassword.Business_short_code,
                "ResponseType": "Completed",
                "ConfirmationURL": MpesaC2bCredential.confirmation_url,
                "ValidationURL": MpesaC2bCredential.validation_url
@@ -187,7 +192,7 @@ def c2b_confirmation(request):
         originalCall = \
             StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
                                         businessShortCode=mpesa_payment['BusinessShortCode'],
-                                        paymentStatus="Success").order_by('-id')[0];
+                                        paymentStatus="Success").order_by('-id')[0]
 
         originalCall.first_name = mpesa_payment['FirstName']
         originalCall.last_name = mpesa_payment['LastName']
@@ -198,11 +203,14 @@ def c2b_confirmation(request):
         originalCall.transactionType = mpesa_payment['TransactionType']
         originalCall.transactionType = mpesa_payment['TransactionType']
         originalCall.save()
+        sendSuccessMessage(account=originalCall.accountReference, amount=originalCall.amount,
+                                               device_id=originalCall.firebase_token)
 
     context = {
         "ResultCode": 0,
         "ResultDesc": "Accepted"
     }
+
     return JsonResponse(dict(context))
 
 
