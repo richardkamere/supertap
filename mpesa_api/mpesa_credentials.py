@@ -11,8 +11,8 @@ class MpesaC2bCredential:
     safaricom_base_url = 'https://sandbox.safaricom.co.ke/'
     api_URL = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
 
-    # base_url = 'https://c9cb-197-232-34-48.ngrok.io/'
-    base_url = 'https://d6bc-197-232-34-48.ngrok.io/'
+    base_url = 'https://supertapdev.pesapalhosting.com/'
+    # base_url = 'https://d6bc-197-232-34-48.ngrok.io/'
     confirmation_url = base_url + 'api/v1/c2b/c2b_confirmation'
     validation_url = base_url + 'api/v1/c2b/validation'
     register_url = safaricom_base_url + 'mpesa/c2b/v1/registerurl'
