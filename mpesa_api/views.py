@@ -2,77 +2,43 @@ import json
 
 import requests
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
-from drf_yasg import renderers
-from requests.auth import HTTPBasicAuth
 from rest_framework import viewsets
-from rest_framework.decorators import permission_classes, api_view, renderer_classes
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
-
 from mpesa_api.serializers import UserSerializer
-
 User = get_user_model()
 from mpesa_api.models import StkPushCalls
 from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword, MpesaC2bCredential
 
-
 @csrf_exempt
 def auto_check_payment(request):
     checkRequest = json.loads(request.body)
-    try:
-        data = StkPushCalls.objects.filter(txnId=checkRequest['txnId']).order_by('-id')[0]
-        if data.paymentStatus == "Success":
-            context = {
-                "stkStatus": data.stkStatus,
-                "customerMessage": data.customerMessage,
-                "paymentStatus": data.paymentStatus,
-                "statusReason": data.statusReason,
-                "txnRefNo": data.txnRefNo,
-                "customerName": data.customerName,
-                "phoneNumber": data.phoneNumber,
-                "paidAmount": data.amount
-            }
-            return JsonResponse(dict(context))
-        else:
-            # access_token = MpesaAccessToken.validated_mpesa_access_token
-            # api_url = MpesaC2bCredential.check_payment_status_url
-            # headers = {"Authorization": "Bearer %s" % access_token}
+    data = StkPushCalls.objects.filter(txnId=checkRequest['txnId']).last()
 
-            # request = {
-            #     "CommandID": LipanaMpesaPpassword.customerBuyGoodsOnline,
-            #     "Amount": data.amount,
-            #     "Msisdn": data.phoneNumber,
-            #     "ShortCode": data.businessShortCode
-            # }
-            #
-            # response = requests.post(api_url, json=request, headers=headers)
-            #
-            # print(response.text)
-
-            context = {
-                "stkStatus": data.stkStatus,
-                "customerMessage": data.customerMessage,
-                "paymentStatus": data.paymentStatus,
-                "statusReason": data.statusReason,
-                "txnRefNo": data.txnRefNo,
-                "customerName": data.first_name,
-                "phoneNumber": data.phoneNumber,
-                "paidAmount": data.amount
-            }
-            return JsonResponse(dict(context))
-
-    except ObjectDoesNotExist:
+    if data and (data.paymentStatus == "Success" or data.stkStatus == "Success"):
         context = {
-            "stkStatus": "Stk Not Received",
-            "customerMessage": "Stk Not Received, Please Tap Again",
+            "stkStatus": data.stkStatus,
+            "customerMessage": data.customerMessage,
+            "paymentStatus": data.paymentStatus,
+            "statusReason": data.statusReason,
+            "txnRefNo": data.txnRefNo,
+            "customerName": data.first_name+' '+data.last_name+' '+data.middle_name,
+            "phoneNumber": data.phoneNumber,
+            "paidAmount": data.amount
+        }
+        return JsonResponse(dict(context))
+    else:
+        context = {
+            "stkStatus": "Stk not received",
+            "customerMessage": "Stk not received, Please tap again",
             "paymentStatus": "Failed",
-            "statusReason": "Stk Not Received, Request the customer to Tap Again",
+            "statusReason": "Stk not received",
             "txnRefNo": "Nil",
-            "customerName": "John Doe",
-            "phoneNumber": "0700 0000000",
+            "customerName": "Nil",
+            "phoneNumber": "Nil",
             "paidAmount": "0.00"
         }
         return JsonResponse(dict(context))
