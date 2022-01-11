@@ -20,21 +20,8 @@ from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword, 
 
 
 @csrf_exempt
-def getAccessToken(request):
-    consumer_key = MpesaC2bCredential.consumer_key
-    consumer_secret = MpesaC2bCredential.consumer_secret
-    api_URL = MpesaC2bCredential.access_token_url;
-    r = requests.get(api_URL, auth=HTTPBasicAuth(consumer_key, consumer_secret))
-    mpesa_access_token = json.loads(r.text)
-    validated_mpesa_access_token = mpesa_access_token['access_token']
-    return HttpResponse(validated_mpesa_access_token)
-
-
-@csrf_exempt
 def auto_check_payment(request):
     checkRequest = json.loads(request.body)
-    print(checkRequest)
-
     try:
         data = StkPushCalls.objects.filter(txnId=checkRequest['txnId']).order_by('-id')[0]
         if data.paymentStatus == "Success":
@@ -94,7 +81,7 @@ def auto_check_payment(request):
 @csrf_exempt
 def lipa_na_mpesa_online(request):
     stkRequest = json.loads(request.body)
-    access_token = MpesaAccessToken.validated_mpesa_access_token
+    access_token = MpesaAccessToken().getAcessToken()
     api_url = MpesaC2bCredential.stk_push_url
     headers = {"Authorization": "Bearer %s" % access_token}
 
@@ -195,9 +182,7 @@ def lipa_na_mpesa_online(request):
 
 @csrf_exempt
 def register_urls(request):
-    access_token = MpesaAccessToken.validated_mpesa_access_token
-    print(MpesaC2bCredential.api_URL)
-    print(access_token)
+    access_token = MpesaAccessToken().getAcessToken()
 
     api_url = MpesaC2bCredential.register_url
     headers = {"Authorization": "Bearer %s" % access_token}

@@ -12,14 +12,14 @@ class MpesaC2bCredential:
     api_URL = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
 
     # base_url = 'https://c9cb-197-232-34-48.ngrok.io/'
-    base_url = 'https://supertapdev.pesapalhosting.com/'
+    base_url = 'https://d6bc-197-232-34-48.ngrok.io/'
     confirmation_url = base_url + 'api/v1/c2b/c2b_confirmation'
     validation_url = base_url + 'api/v1/c2b/validation'
     register_url = safaricom_base_url + 'mpesa/c2b/v1/registerurl'
     access_token_url = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
     check_payment_status_url = safaricom_base_url + 'mpesa/c2b/v1/simulate'
-    stk_push_url = safaricom_base_url+'mpesa/stkpush/v1/processrequest'
-    stk_push_callback_url = safaricom_base_url+'api/v1/c2b/confirmation'
+    stk_push_url = safaricom_base_url + 'mpesa/stkpush/v1/processrequest'
+    stk_push_callback_url = safaricom_base_url + 'api/v1/c2b/confirmation'
 
 
 class MpesaAccessToken:
@@ -27,6 +27,14 @@ class MpesaAccessToken:
                      auth=HTTPBasicAuth(MpesaC2bCredential.consumer_key, MpesaC2bCredential.consumer_secret))
     mpesa_access_token = json.loads(r.text)
     validated_mpesa_access_token = mpesa_access_token['access_token']
+
+    def getAcessToken(self):
+        r = requests.get(MpesaC2bCredential.api_URL,
+                         auth=HTTPBasicAuth(MpesaC2bCredential.consumer_key, MpesaC2bCredential.consumer_secret))
+        mpesa_access_token = json.loads(r.text)
+        validated_mpesa_access_token = mpesa_access_token['access_token']
+
+        return validated_mpesa_access_token
 
 
 class LipanaMpesaPpassword:
