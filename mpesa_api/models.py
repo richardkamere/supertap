@@ -21,7 +21,6 @@ class StkPushCalls(BaseModel):
     partyB = models.CharField(max_length=255)
     phoneNumber = models.CharField(max_length=255, verbose_name="Phone Number")
     accountReference = models.CharField(max_length=255, verbose_name="Paid Account")
-    firebase_token = models.CharField(max_length=255, default="123")
     transactionDesc = models.CharField(max_length=255)
     merchantRequestId = models.CharField(max_length=255)
     checkoutRequestId = models.CharField(max_length=255)
