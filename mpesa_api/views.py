@@ -157,7 +157,7 @@ def register_urls(request):
 
     api_url = MpesaC2bCredential.register_url
     headers = {"Authorization": "Bearer %s" % access_token}
-    options = {"ShortCode": LipanaMpesaPpassword.Test_c2b_shortcode,
+    options = {"ShortCode": LipanaMpesaPpassword.Business_short_code,
                "ResponseType": "Completed",
                "ConfirmationURL": MpesaC2bCredential.confirmation_url,
                "ValidationURL": MpesaC2bCredential.validation_url
