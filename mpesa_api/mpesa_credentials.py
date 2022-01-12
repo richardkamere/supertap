@@ -8,12 +8,11 @@ import base64
 
 
 class MpesaC2bCredential:
-    consumer_key = 'kG3vJqUlANXmX9bSDA2SuLKYwA8v2lza'
-    consumer_secret = 'Cx625lQX2NOmgVZv'
-    safaricom_base_url = 'https://api.safaricom.co.ke/'
+    consumer_key = '6Gx2HNSCzyOMLLSCE1pCnDck6dGtR9bD'
+    consumer_secret = 'GnPicfxhwfWWg0kY'
+    safaricom_base_url = 'https://sandbox.safaricom.co.ke/'
     api_URL = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
-
-    base_url = 'https://c9cb-197-232-34-48.ngrok.io/'
+    base_url = 'https://126c-197-254-46-90.ngrok.io/'
     # base_url = 'https://d6bc-197-232-34-48.ngrok.io/'
     confirmation_url = base_url + 'api/v1/c2b/c2b_confirmation'
     validation_url = base_url + 'api/v1/c2b/validation'
@@ -37,8 +36,9 @@ class MpesaAccessToken:
 
 class LipanaMpesaPpassword:
     lipa_time = datetime.now().strftime('%Y%m%d%H%M%S')
-    Business_short_code = "7528791"
-    Business_till_number = "5541217"
+    Business_short_code = "174379"
+    Business_till_number = "174379"
+    Test_c2b_shortcode = "600982"
     passkey = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
     data_to_encode = Business_short_code + passkey + lipa_time
     online_password = base64.b64encode(data_to_encode.encode())

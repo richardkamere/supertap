@@ -157,7 +157,7 @@ def register_urls(request):
 
     api_url = MpesaC2bCredential.register_url
     headers = {"Authorization": "Bearer %s" % access_token}
-    options = {"ShortCode": LipanaMpesaPpassword.Business_short_code,
+    options = {"ShortCode": LipanaMpesaPpassword.Test_c2b_shortcode,
                "ResponseType": "Completed",
                "ConfirmationURL": MpesaC2bCredential.confirmation_url,
                "ValidationURL": MpesaC2bCredential.validation_url
@@ -185,6 +185,8 @@ def validation(request):
 def c2b_confirmation(request):
     mpesa_body = request.body.decode('utf-8')
     mpesa_payment = json.loads(mpesa_body)
+
+    print("done")
 
     if not StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
                                        businessShortCode=mpesa_payment['BusinessShortCode'],
