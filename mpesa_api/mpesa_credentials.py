@@ -7,6 +7,7 @@ from datetime import datetime
 import base64
 
 
+
 class MpesaC2bCredential:
     consumer_key = '588e69d9-3cf3-4cb8-a5d5-cbb43147b460'
     consumer_secret = '123dc986-8cb9-45db-a8f7-02f1080d295c'
