@@ -33,8 +33,7 @@ def auto_check_payment(request):
             "phoneNumber": data.phoneNumber,
             "paidAmount": data.amount
         }
-        sendSuccessMessage(account=data.accountReference, amount=data.amount,
-                           device_id=data.firebaseToken)
+
         return JsonResponse(dict(context))
     else:
         context = {
@@ -267,7 +266,7 @@ def confirmation(request):
         stkRequest.statusReason = "Payment received successfully"
         stkRequest.txnRefNo = mpesaReceiptNumber
         stkRequest.transactionDate = transactionDate
-        # stkRequest.save()
+        stkRequest.save()
 
         context = {
             "ResultCode": stkCallback['ResultCode'],
@@ -275,7 +274,7 @@ def confirmation(request):
         }
 
         print(dict(context))
-        firebaseToken = stkRequest.firebase_token;
+        firebaseToken = stkRequest.firebase_token
         sendSuccessMessage(account=stkRequest.accountReference, amount=stkRequest.amount,
                            device_id=firebaseToken)
 
