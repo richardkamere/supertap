@@ -16,6 +16,7 @@ from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword, 
     sendFailedMessage
 
 
+
 @csrf_exempt
 def auto_check_payment(request):
     checkRequest = json.loads(request.body)
