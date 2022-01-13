@@ -61,23 +61,20 @@ def lipa_na_mpesa_online(request):
         "call_back_url": MpesaC2bCredential.stk_push_callback_url,
         "description": stkRequest['merchantName'],
         "settlement_mapping_id": "c0e59031-5358-4aa0-815c-01b3c8d329e6",
-        "customer_name":"",
-        "reversal_notification_url":""
+        "customer_name": "",
+        "reversal_notification_url": ""
     }
 
     # check if the transaction exists
     if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
-        print(request)
-
         response = requests.post(api_url, json=request, headers=headers)
-        print(headers)
-        print(api_url)
-        print(headers)
+
+        jsonResponse = json.loads(response.text)
 
         if response.status_code == 200:
             stkRequestV1 = StkPushCalls(
-                businessShortCode=request['BusinessShortCode'],
-                transactionType=request['TransactionType'],
+                businessShortCode=jsonResponse.paybill_number,
+                transactionType=jsonResponse,
                 amount=request['Amount'],
                 partyA=request['PartyA'],
                 partyB=request['PartyB'],
