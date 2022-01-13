@@ -13,15 +13,14 @@ class MpesaC2bCredential:
     safaricom_base_url = 'https://api.safaricom.co.ke/'
     api_URL = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
 
-    base_url = 'https://c9cb-197-232-34-48.ngrok.io/'
-    # base_url = 'https://d6bc-197-232-34-48.ngrok.io/'
+    base_url = 'https://supertapdev.pesapalhosting.com/'
     confirmation_url = base_url + 'api/v1/c2b/c2b_confirmation'
     validation_url = base_url + 'api/v1/c2b/validation'
     register_url = safaricom_base_url + 'mpesa/c2b/v1/registerurl'
     access_token_url = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
     check_payment_status_url = safaricom_base_url + 'mpesa/c2b/v1/simulate'
     stk_push_url = safaricom_base_url + 'mpesa/stkpush/v1/processrequest'
-    stk_push_callback_url = safaricom_base_url + 'api/v1/c2b/confirmation'
+    stk_push_callback_url = base_url + 'api/v1/c2b/confirmation'
 
 
 class MpesaAccessToken:
@@ -39,7 +38,7 @@ class LipanaMpesaPpassword:
     lipa_time = datetime.now().strftime('%Y%m%d%H%M%S')
     Business_short_code = "7528791"
     Business_till_number = "5541217"
-    passkey = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
+    passkey = '5c702594ac2a13d87c51e419e39fe9430fe071c71f402d8d77aad52db7490137'
     data_to_encode = Business_short_code + passkey + lipa_time
     online_password = base64.b64encode(data_to_encode.encode())
     decode_password = online_password.decode('utf-8')

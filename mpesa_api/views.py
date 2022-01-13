@@ -58,22 +58,26 @@ def lipa_na_mpesa_online(request):
         "BusinessShortCode": LipanaMpesaPpassword.Business_short_code,
         "Password": LipanaMpesaPpassword.decode_password,
         "Timestamp": LipanaMpesaPpassword.lipa_time,
-        "TransactionType": "CustomerPayBillOnline",
+        "TransactionType": "CustomerBuyGoodsOnline",
         "Amount": stkRequest['amount'],
         "PartyA": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
         "PartyB": LipanaMpesaPpassword.Business_till_number,
         "PhoneNumber": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
         "CallBackURL": MpesaC2bCredential.stk_push_callback_url,
         "AccountReference": stkRequest['merchantName'],
-        "TransactionDesc": "PESAPAL SABI"
+        "TransactionDesc": "CustomerPayBillOnline"
     }
+
+    print(request)
+    print(api_url)
+    print(access_token)
+    print(headers)
 
     # check if the transaction exists
     if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
         response = requests.post(api_url, json=request, headers=headers)
 
         print(response.text)
-
         if response.status_code == 200:
             stkRequestV1 = StkPushCalls(
                 businessShortCode=request['BusinessShortCode'],
@@ -145,8 +149,8 @@ def lipa_na_mpesa_online(request):
 
     else:
         context = {
-            "ResponseCode": 1,
-            "CustomerMessage": "Transaction complete, Please Tap your phone on the terminal again"
+        "ResponseCode": 1,
+        "CustomerMessage": "Transaction complete, Please Tap your phone on the terminal again"
         }
         return JsonResponse(dict(context))
 
