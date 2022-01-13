@@ -226,8 +226,9 @@ def confirmation(request):
     mpesaPayment = mpesa_payment['Body']
     stkCallback = mpesaPayment['stkCallback']
 
-    if stkCallback.__contains__('CallbackMetadata'):
+    firebaseToken = None;
 
+    if stkCallback.__contains__('CallbackMetadata'):
         callbackMetadata = stkCallback['CallbackMetadata']
         merchantRequestId = stkCallback['MerchantRequestID']
         checkoutRequestId = stkCallback['CheckoutRequestID']
@@ -272,6 +273,9 @@ def confirmation(request):
         }
 
         print(dict(context))
+        firebaseToken = stkRequest.firebase_token;
+        sendSuccessMessage(account=stkRequest.accountReference, amount=stkRequest.amount,
+                           device_id=firebaseToken)
 
         return JsonResponse(dict(context))
     else:
