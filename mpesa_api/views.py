@@ -33,6 +33,8 @@ def auto_check_payment(request):
             "phoneNumber": data.phoneNumber,
             "paidAmount": data.amount
         }
+        sendSuccessMessage(account=data.accountReference, amount=data.amount,
+                           device_id=data.firebaseToken)
         return JsonResponse(dict(context))
     else:
         context = {
