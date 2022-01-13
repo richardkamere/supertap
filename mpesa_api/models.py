@@ -30,6 +30,7 @@ class StkPushCalls(BaseModel):
     first_name = models.CharField(max_length=255, default="Nil ", verbose_name="First Name")
     last_name = models.CharField(max_length=255, default="Nil", verbose_name="Last Name")
     middle_name = models.CharField(max_length=255, default="Nil", verbose_name="Middle Name")
+    firebase_token = models.CharField(max_length=255, default="12345")
     stkStatus = models.CharField(max_length=255, default="Failed", verbose_name="STK Status")
     paymentStatus = models.CharField(max_length=255, default="Pending", verbose_name="Payment Status")
     statusReason = models.CharField(max_length=255, default="not know", verbose_name="Status Reason")

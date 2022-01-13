@@ -51,28 +51,28 @@ def auto_check_payment(request):
 def lipa_na_mpesa_online(request):
     stkRequest = json.loads(request.body)
     access_token = MpesaAccessToken().getAcessToken()
-    print(access_token)
-    api_url = MpesaC2bCredential.stk_push_url
     headers = {"Authorization": "Bearer %s" % access_token}
+
+    api_url = MpesaC2bCredential.stk_push_url
     request = {
-        "BusinessShortCode": LipanaMpesaPpassword.Business_short_code,
-        "Password": LipanaMpesaPpassword.decode_password,
-        "Timestamp": LipanaMpesaPpassword.lipa_time,
-        "TransactionType": "CustomerPayBillOnline",
-        "Amount": stkRequest['amount'],
-        "PartyA": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
-        "PartyB": LipanaMpesaPpassword.Business_till_number,
-        "PhoneNumber": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
-        "CallBackURL": MpesaC2bCredential.stk_push_callback_url,
-        "AccountReference": stkRequest['merchantName'],
-        "TransactionDesc": "PESAPAL SABI"
+        "merchant_reference": stkRequest['txnId'],
+        "amount": stkRequest['amount'],
+        "phone_number": stkRequest['phoneNumber'],
+        "call_back_url": MpesaC2bCredential.stk_push_callback_url,
+        "description": stkRequest['merchantName'],
+        "settlement_mapping_id": "c0e59031-5358-4aa0-815c-01b3c8d329e6",
+        "customer_name":"",
+        "reversal_notification_url":""
     }
 
     # check if the transaction exists
     if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
-        response = requests.post(api_url, json=request, headers=headers)
+        print(request)
 
-        print(response.text)
+        response = requests.post(api_url, json=request, headers=headers)
+        print(headers)
+        print(api_url)
+        print(headers)
 
         if response.status_code == 200:
             stkRequestV1 = StkPushCalls(
@@ -132,7 +132,7 @@ def lipa_na_mpesa_online(request):
                 firebase_token=stkRequest['firebaseToken']
             )
             sendFailedMessage(message=response.json()['errorMessage'],
-                                                  device_id=stkRequestV1.firebase_token)
+                              device_id=stkRequestV1.firebase_token)
             if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
                 stkRequestV1.save()
 
@@ -148,13 +148,12 @@ def lipa_na_mpesa_online(request):
             "ResponseCode": 1,
             "CustomerMessage": "Transaction complete, Please Tap your phone on the terminal again"
         }
-        return JsonResponse(dict(context))
+    return JsonResponse(dict(context))
 
 
 @csrf_exempt
 def register_urls(request):
     access_token = MpesaAccessToken().getAcessToken()
-
     api_url = MpesaC2bCredential.register_url
     headers = {"Authorization": "Bearer %s" % access_token}
     options = {"ShortCode": LipanaMpesaPpassword.Business_short_code,
@@ -186,8 +185,6 @@ def c2b_confirmation(request):
     mpesa_body = request.body.decode('utf-8')
     mpesa_payment = json.loads(mpesa_body)
 
-    print("done")
-
     if not StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
                                        businessShortCode=mpesa_payment['BusinessShortCode'],
                                        paymentStatus="Success").order_by('-id')[0].exist():
@@ -206,7 +203,7 @@ def c2b_confirmation(request):
         originalCall.transactionType = mpesa_payment['TransactionType']
         originalCall.save()
         sendSuccessMessage(account=originalCall.accountReference, amount=originalCall.amount,
-                                               device_id=originalCall.firebase_token)
+                           device_id=originalCall.firebase_token)
 
     context = {
         "ResultCode": 0,
