@@ -267,7 +267,7 @@ def confirmation(request):
         stkRequest.statusReason = "Payment received successfully"
         stkRequest.txnRefNo = mpesaReceiptNumber
         stkRequest.transactionDate = transactionDate
-        stkRequest.save()
+        # stkRequest.save()
 
         context = {
             "ResultCode": stkCallback['ResultCode'],
