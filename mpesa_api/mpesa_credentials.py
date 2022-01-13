@@ -19,7 +19,7 @@ class MpesaC2bCredential:
     access_token_url = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
     check_payment_status_url = safaricom_base_url + 'mpesa/c2b/v1/simulate'
     stk_push_url = safaricom_base_url + 'api/Transaction/PostMpesaRequest'
-    stk_push_callback_url = safaricom_base_url + 'api/v1/c2b/confirmation'
+    stk_push_callback_url = base_url + 'api/v1/c2b/confirmation'
 
 
 class MpesaAccessToken:
@@ -52,6 +52,8 @@ class FirebaseMessaging:
 def sendSuccessMessage(**kwargs):
     account = kwargs['account']
     amount = kwargs['amount']
+    print(amount)
+    print(account)
     push_service = FCMNotification(
         api_key=FirebaseMessaging.api_key)
     registration_id = kwargs['device_id']
@@ -59,8 +61,7 @@ def sendSuccessMessage(**kwargs):
     data_message = {
         "is_payment": True,
         "amount": amount,
-        "payment_description": "Dear customer your payment for " + account + " " + amount + "has been processed "
-                                                                                            "successfully",
+        "payment_description": "Dear customer your payment for " + str(account) + " - " + str(amount) + ".00 has been processed"                                                                        "successfully",
         "title": "Transaction Successful",
         "status": "200",
         "is_mpesa": True
@@ -77,7 +78,7 @@ def sendFailedMessage(**kwargs):
 
     data_message = {
         "is_payment": True,
-        "payment_description": "Dear customer your payment could not be completed due to " + message,
+        "payment_description": "Dear customer your payment could not be completed",
         "title": "Mpesa Push Has Failed",
         "status": "500",
         "is_mpesa": True

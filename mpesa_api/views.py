@@ -58,7 +58,7 @@ def lipa_na_mpesa_online(request):
         "merchant_reference": stkRequest['txnId'],
         "amount": stkRequest['amount'],
         "phone_number": stkRequest['phoneNumber'],
-        "call_back_url": MpesaC2bCredential.stk_push_callback_url,
+        "call_back_url": MpesaC2bCredential.confirmation_url,
         "description": stkRequest['merchantName'],
         "settlement_mapping_id": "c0e59031-5358-4aa0-815c-01b3c8d329e6",
         "customer_name": "",
@@ -70,22 +70,24 @@ def lipa_na_mpesa_online(request):
         response = requests.post(api_url, json=request, headers=headers)
 
         jsonResponse = json.loads(response.text)
+        print(stkRequest)
 
         if response.status_code == 200:
             stkRequestV1 = StkPushCalls(
-                businessShortCode=jsonResponse.paybill_number,
-                transactionType=jsonResponse,
-                amount=request['Amount'],
-                partyA=request['PartyA'],
-                partyB=request['PartyB'],
-                phoneNumber=request['PhoneNumber'],
-                accountReference=request['AccountReference'],
-                transactionDesc=request['TransactionDesc'],
-                merchantRequestId=response.json()['MerchantRequestID'],
-                checkoutRequestId=response.json()['CheckoutRequestID'],
-                responseCode=response.json()['ResponseCode'],
-                responseDescription=response.json()['ResponseDescription'],
-                customerMessage=response.json()['CustomerMessage'],
+                businessShortCode=jsonResponse['paybill_number'],
+                request_code=jsonResponse['request_code'],
+                transactionType='CustomerPayBillOnline',
+                amount=stkRequest['amount'],
+                partyA=stkRequest['phoneNumber'],
+                partyB=jsonResponse['paybill_number'],
+                phoneNumber=stkRequest['phoneNumber'],
+                accountReference=stkRequest['merchantName'],
+                transactionDesc=jsonResponse['message'],
+                merchantRequestId=stkRequest['merchantName'],
+                checkoutRequestId=stkRequest['merchantName'],
+                responseCode=jsonResponse['status'],
+                responseDescription=jsonResponse['message'],
+                customerMessage=jsonResponse['message'],
                 stkStatus="Success",
                 paymentStatus="Pending",
                 statusReason="Stk sent, Waiting for customer to complete payment",
@@ -97,35 +99,37 @@ def lipa_na_mpesa_online(request):
                 stkRequestV1.save()
             else:
                 originalCall = StkPushCalls.objects.filter(txnId=stkRequest['txnId']).order_by('-id')[0]
-                originalCall.checkoutRequestId = response.json()['CheckoutRequestID']
-                originalCall.merchantRequestId = response.json()['CheckoutRequestID']
+                originalCall.checkoutRequestId = stkRequest['merchantName']
+                originalCall.merchantRequestId = stkRequest['merchantName']
+                originalCall.request_code = jsonResponse['request_code']
                 originalCall.retryTimes = originalCall.retryTimes + 1
                 originalCall.save()
             context = {
-                "ResponseCode": response.json()['ResponseCode'],
-                "CustomerMessage": response.json()['CustomerMessage']
+                "ResponseCode": "0",
+                "CustomerMessage": jsonResponse['message']
             }
 
             return JsonResponse(dict(context))
         else:
             stkRequestV1 = StkPushCalls(
-                businessShortCode=request['BusinessShortCode'],
-                transactionType=request['TransactionType'],
-                amount=request['Amount'],
-                partyA=request['PartyA'],
-                partyB=request['PartyB'],
-                phoneNumber="0702931540",
-                accountReference=request['AccountReference'],
-                transactionDesc=request['TransactionDesc'],
-                merchantRequestId=response.json()['requestId'],
-                checkoutRequestId=response.json()['requestId'],
-                responseCode=response.json()['errorCode'],
-                responseDescription=response.json()['errorMessage'],
-                customerMessage=response.json()['errorMessage'],
+                businessShortCode=jsonResponse['paybill_number'],
+                transactionType='CustomerPayBillOnline',
+                amount=stkRequest['amount'],
+                partyA=stkRequest['phoneNumber'],
+                partyB=jsonResponse['paybill_number'],
+                phoneNumber=stkRequest['phoneNumber'],
+                accountReference=stkRequest['merchantName'],
+                transactionDesc=jsonResponse['message'],
+                merchantRequestId=stkRequest['merchantName'],
+                checkoutRequestId=stkRequest['merchantName'],
+                responseCode=jsonResponse['status'],
+                responseDescription=jsonResponse['message'],
+                customerMessage=jsonResponse['message'],
                 stkStatus="Failed",
-                paymentStatus='Failed',
-                statusReason=response.json()['errorMessage'],
+                paymentStatus="Failed",
+                statusReason=jsonResponse['message'],
                 txnId=stkRequest['txnId'],
+                request_code=jsonResponse['request_code'],
                 firebase_token=stkRequest['firebaseToken']
             )
             sendFailedMessage(message=response.json()['errorMessage'],
@@ -135,7 +139,7 @@ def lipa_na_mpesa_online(request):
 
             context = {
                 "ResponseCode": 1,
-                "CustomerMessage": response.json()['errorMessage']
+                "CustomerMessage": jsonResponse['message']
             }
 
             return JsonResponse(dict(context))
@@ -143,7 +147,7 @@ def lipa_na_mpesa_online(request):
     else:
         context = {
             "ResponseCode": 1,
-            "CustomerMessage": "Transaction complete, Please Tap your phone on the terminal again"
+            "CustomerMessage": "Transaction has been complete, Please Tap your phone on the terminal again"
         }
     return JsonResponse(dict(context))
 
@@ -179,33 +183,35 @@ def validation(request):
 
 @csrf_exempt
 def c2b_confirmation(request):
-    mpesa_body = request.body.decode('utf-8')
-    mpesa_payment = json.loads(mpesa_body)
+    mpesa_payment = json.loads(request.body)
 
-    if not StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
-                                       businessShortCode=mpesa_payment['BusinessShortCode'],
-                                       paymentStatus="Success").order_by('-id')[0].exist():
-        originalCall = \
-            StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
-                                        businessShortCode=mpesa_payment['BusinessShortCode'],
-                                        paymentStatus="Success").order_by('-id')[0]
+    print(mpesa_payment)
+    originalCall = \
+        StkPushCalls.objects.filter(request_code=mpesa_payment['request_code']).order_by('-id')[0]
 
-        originalCall.first_name = mpesa_payment['FirstName']
-        originalCall.last_name = mpesa_payment['LastName']
-        originalCall.amount = mpesa_payment['TransAmount']
-        originalCall.txnRefNo = mpesa_payment['TransID']
-        originalCall.updated_at = mpesa_payment['TransTime']
-        originalCall.businessShortCode = mpesa_payment['BusinessShortCode']
-        originalCall.transactionType = mpesa_payment['TransactionType']
-        originalCall.transactionType = mpesa_payment['TransactionType']
-        originalCall.save()
+    originalCall.first_name = "John"
+    originalCall.last_name = "Due"
+    originalCall.txnRefNo = mpesa_payment['confirmation_code']
+    originalCall.updated_at = mpesa_payment['created_date']
+
+    if mpesa_payment['payment_status_decription'] == "Completed":
+        originalCall.paymentStatus = "Success"
+        context = {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
         sendSuccessMessage(account=originalCall.accountReference, amount=originalCall.amount,
                            device_id=originalCall.firebase_token)
+    else:
+        originalCall.paymentStatus = "Failed"
+        context = {
+            "ResultCode": 0,
+            "ResultDesc": "Failed"
+        }
+        sendFailedMessage(message="Failed",
+                          device_id=originalCall.firebase_token)
 
-    context = {
-        "ResultCode": 0,
-        "ResultDesc": "Accepted"
-    }
+    originalCall.save()
 
     return JsonResponse(dict(context))
 

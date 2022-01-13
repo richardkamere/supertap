@@ -17,6 +17,7 @@ class StkPushCalls(BaseModel):
     businessShortCode = models.CharField(max_length=255, verbose_name="Short Code")
     transactionType = models.CharField(max_length=225)
     amount = models.IntegerField()
+    request_code = models.CharField(max_length=255, default="12345")
     partyA = models.CharField(max_length=225)
     partyB = models.CharField(max_length=255)
     phoneNumber = models.CharField(max_length=255, verbose_name="Phone Number")
@@ -37,6 +38,7 @@ class StkPushCalls(BaseModel):
     txnId = models.CharField(max_length=255, default="1212", verbose_name="Txn Id")
     txnRefNo = models.CharField(max_length=255, default="Nil", verbose_name="Mpesa TxnId")
     transactionDate = models.DateTimeField(auto_now=True)
+
     retryTimes = models.IntegerField(default=0, verbose_name="STK Retries")
 
     class Meta:
