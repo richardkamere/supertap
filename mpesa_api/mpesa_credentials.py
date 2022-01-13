@@ -59,7 +59,7 @@ def sendSuccessMessage(**kwargs):
     data_message = {
         "is_payment": True,
         "amount": amount,
-        "payment_description": "Dear customer your payment for " + str(account) + "  " + str(amount) + " has been processed "
+        "payment_description": "Dear customer your payment for " + str(account) + "  " + str(amount) + ".00 has been processed "
                                                                                             "successfully",
         "title": "Transaction Successful",
         "status": "200",
