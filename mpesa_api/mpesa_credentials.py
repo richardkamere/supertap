@@ -22,7 +22,6 @@ class MpesaC2bCredential:
     stk_push_url = safaricom_base_url + 'mpesa/stkpush/v1/processrequest'
     stk_push_callback_url = base_url + 'api/v1/c2b/confirmation'
 
-
 class MpesaAccessToken:
 
     def getAcessToken(self):
