@@ -56,7 +56,7 @@ def lipa_na_mpesa_online(request):
         "Password": LipanaMpesaPpassword.decode_password,
         "Timestamp": LipanaMpesaPpassword.lipa_time,
         "TransactionType": "CustomerBuyGoodsOnline",
-        "Amount": 1.00,
+        "Amount": stkRequest['amount'],
         "PartyA": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
         "PartyB": LipanaMpesaPpassword.Business_till_number,
         "PhoneNumber": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
