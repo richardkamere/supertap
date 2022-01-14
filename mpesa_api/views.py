@@ -189,10 +189,9 @@ def validation(request):
 
 @csrf_exempt
 def c2b_confirmation(request):
-    mpesa_body = request.body.decode('utf-8')
-    mpesa_payment = json.loads(mpesa_body)
+    mpesa_payment = json.loads(request.body)
 
-    print(mpesa_body)
+    print(mpesa_payment)
 
     if not StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
                                        businessShortCode=mpesa_payment['BusinessShortCode'],
