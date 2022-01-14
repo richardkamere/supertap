@@ -50,7 +50,7 @@ def lipa_na_mpesa_online(request):
     access_token = MpesaAccessToken().getAcessToken()
     api_url = MpesaC2bCredential.stk_push_url
     headers = {"Authorization": "Bearer %s" % access_token}
-    print(stkRequest['amount'])
+    print(stkRequest)
     request = {
         "BusinessShortCode": LipanaMpesaPpassword.Business_short_code,
         "Password": LipanaMpesaPpassword.decode_password,
