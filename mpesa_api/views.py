@@ -232,6 +232,7 @@ def confirmation(request):
         errorMessage = stkCallback['ResultDesc']
         stkRequest.customerMessage = errorMessage
         stkRequest.stkStatus = "Success"
+        stkRequest.paymentStatus = "Failed"
         stkRequest.statusReason = errorMessage
         stkRequest.save()
         sendFailedMessage(message=stkRequest.customerMessage,
