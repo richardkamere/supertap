@@ -12,7 +12,6 @@ class MpesaC2bCredential:
     consumer_secret = 'Cx625lQX2NOmgVZv'
     safaricom_base_url = 'https://api.safaricom.co.ke/'
     api_URL = safaricom_base_url + 'oauth/v1/generate?grant_type=client_credentials'
-
     base_url = 'https://supertapdev.pesapalhosting.com/'
     confirmation_url = base_url + 'api/v1/c2b/c2b_confirmation'
     validation_url = base_url + 'api/v1/c2b/validation'
@@ -23,7 +22,6 @@ class MpesaC2bCredential:
     stk_push_callback_url = base_url + 'api/v1/c2b/confirmation'
 
 class MpesaAccessToken:
-
     def getAcessToken(self):
         r = requests.get(MpesaC2bCredential.api_URL,
                          auth=HTTPBasicAuth(MpesaC2bCredential.consumer_key, MpesaC2bCredential.consumer_secret))
