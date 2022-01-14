@@ -225,9 +225,7 @@ def confirmation(request):
     stkRequest.checkoutRequestId = checkoutRequestId
     firebaseToken = stkRequest.firebase_token
 
-    print(stkCallback)
-
-    if not stkCallback['ResultCode'] == 0:
+    if stkCallback['ResultCode'] == 0:
         errorMessage = stkCallback['ResultDesc']
         stkRequest.customerMessage = errorMessage
         stkRequest.stkStatus = "Success"
@@ -235,7 +233,13 @@ def confirmation(request):
         stkRequest.save()
 
         sendFailedMessage(message=stkRequest.customerMessage,
-                      device_id=firebaseToken)
+                          device_id=firebaseToken)
+
+    context = {
+        "ResultCode": 0,
+        "ResultDesc": "Accepted"
+    }
+    return JsonResponse(dict(context))
 
 
 @permission_classes((AllowAny,))
