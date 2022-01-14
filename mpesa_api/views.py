@@ -225,6 +225,8 @@ def confirmation(request):
     stkRequest.checkoutRequestId = checkoutRequestId
     firebaseToken = stkRequest.firebase_token
 
+    print(stkCallback)
+
     if not stkCallback['ResultCode'] == 0:
         errorMessage = stkCallback['ResultDesc']
         stkRequest.customerMessage = errorMessage
