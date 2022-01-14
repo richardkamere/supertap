@@ -36,14 +36,10 @@ def auto_check_payment(request):
         return JsonResponse(dict(context))
     else:
         context = {
-            "stkStatus": "Stk not received",
-            "customerMessage": "Stk not received, Please tap again",
+            "stkStatus": data.stkStatus,
+            "customerMessage": data.statusReason,
             "paymentStatus": "Failed",
-            "statusReason": "Stk not received",
-            "txnRefNo": "Nil",
-            "customerName": "Nil",
-            "phoneNumber": "Nil",
-            "paidAmount": "0.00"
+            "statusReason": data.statusReason,
         }
         return JsonResponse(dict(context))
 
@@ -52,7 +48,6 @@ def auto_check_payment(request):
 def lipa_na_mpesa_online(request):
     stkRequest = json.loads(request.body)
     access_token = MpesaAccessToken().getAcessToken()
-    print(access_token)
     api_url = MpesaC2bCredential.stk_push_url
     headers = {"Authorization": "Bearer %s" % access_token}
     request = {
@@ -68,11 +63,6 @@ def lipa_na_mpesa_online(request):
         "AccountReference": stkRequest['merchantName'],
         "TransactionDesc": "CustomerPayBillOnline"
     }
-
-    print(request)
-    print(api_url)
-    print(access_token)
-    print(headers)
 
     # check if the transaction exists
     if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
@@ -227,69 +217,37 @@ def c2b_confirmation(request):
 def confirmation(request):
     mpesa_body = request.body.decode('utf-8')
     print(mpesa_body)
-    # mpesa_payment = json.loads(mpesa_body)
-    # mpesaPayment = mpesa_payment['Body']
-    # stkCallback = mpesaPayment['stkCallback']
+    mpesa_payment = json.loads(mpesa_body)
+    mpesaPayment = mpesa_payment['Body']
+    stkCallback = mpesaPayment['stkCallback']
     #
     # firebaseToken = None;
     #
-    # if stkCallback.__contains__('CallbackMetadata'):
-    #     callbackMetadata = stkCallback['CallbackMetadata']
-    #     merchantRequestId = stkCallback['MerchantRequestID']
-    #     checkoutRequestId = stkCallback['CheckoutRequestID']
-    #     items = callbackMetadata['Item']
-    #
-    #     amount = None
-    #     mpesaReceiptNumber = None
-    #     transactionDate = None
-    #     phoneNumber = None
-    #
-    #     for item in items:
-    #         name = item['Name']
-    #         value = "Nil"
-    #         if 'Value' in item:
-    #             value = item['Value']
-    #
-    #         if name == "Amount":
-    #             amount = value
-    #         elif name == "MpesaReceiptNumber":
-    #             mpesaReceiptNumber = value
-    #         elif name == "TransactionDate":
-    #             transactionDate = value
-    #         elif name == "PhoneNumber":
-    #             phoneNumber = value
-    #
-    #     stkRequest = StkPushCalls.objects.filter(checkoutRequestId=checkoutRequestId).order_by('-id')[0]
-    #     stkRequest.amount = amount
-    #     stkRequest.phoneNumber = phoneNumber
-    #     stkRequest.merchantRequestId = merchantRequestId
-    #     stkRequest.checkoutRequestId = checkoutRequestId
-    #     stkRequest.customerMessage = "Payment received successfully"
-    #     stkRequest.stkStatus = "Success"
-    #     stkRequest.paymentStatus = "Success"
-    #     stkRequest.statusReason = "Payment received successfully"
-    #     stkRequest.txnRefNo = mpesaReceiptNumber
-    #     stkRequest.transactionDate = transactionDate
-    #     stkRequest.save()
-    #
-    #     context = {
-    #         "ResultCode": stkCallback['ResultCode'],
-    #         "ResultDesc": stkCallback['ResultDesc']
-    #     }
-    #
-    #     print(dict(context))
-    #     firebaseToken = stkRequest.firebase_token
-    #     # sendSuccessMessage(account=stkRequest.accountReference, amount=stkRequest.amount,
-    #     #                    device_id=firebaseToken)
-    #
-    #     return JsonResponse(dict(context))
-    # else:
-    context = {
-        "ResultCode": 1,
-        "ResultDesc": "desc"
-    }
-    #     print(dict(context))
-    return JsonResponse(dict(context))
+    if stkCallback.__contains__('CallbackMetadata'):
+        merchantRequestId = stkCallback['MerchantRequestID']
+        checkoutRequestId = stkCallback['CheckoutRequestID']
+        stkRequest = StkPushCalls.objects.filter(checkoutRequestId=checkoutRequestId).order_by('-id')[0]
+        stkRequest.merchantRequestId = merchantRequestId
+        stkRequest.checkoutRequestId = checkoutRequestId
+        firebaseToken = stkRequest.firebase_token
+
+        if not stkCallback['ResponseCode'] == 0:
+            errorMessage = stkCallback['ResponseDescription']
+            stkRequest.customerMessage = errorMessage
+            stkRequest.stkStatus = "Failed"
+            stkRequest.statusReason = errorMessage
+            stkRequest.save()
+
+        elif not stkCallback['ResultCode'] == 0:
+
+            errorMessage = stkCallback['ResultDesc']
+            stkRequest.customerMessage = errorMessage
+            stkRequest.stkStatus = "Success"
+            stkRequest.statusReason = errorMessage
+            stkRequest.save()
+
+        sendFailedMessage(message=stkRequest.customerMessage,
+                          device_id=firebaseToken)
 
 
 @permission_classes((AllowAny,))
