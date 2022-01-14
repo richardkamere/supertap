@@ -198,7 +198,7 @@ def c2b_confirmation(request):
         originalCall.first_name = mpesa_payment['FirstName']
         originalCall.last_name = mpesa_payment['LastName']
         originalCall.amount = mpesa_payment['TransAmount']
-        originalCall.paymentStatus = mpesa_payment['TransAmount']
+        originalCall.paymentStatus = "Success"
         originalCall.txnRefNo = mpesa_payment['TransID']
         originalCall.updated_at = mpesa_payment['TransTime']
         originalCall.businessShortCode = mpesa_payment['BusinessShortCode']
