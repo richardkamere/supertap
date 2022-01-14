@@ -50,12 +50,13 @@ def lipa_na_mpesa_online(request):
     access_token = MpesaAccessToken().getAcessToken()
     api_url = MpesaC2bCredential.stk_push_url
     headers = {"Authorization": "Bearer %s" % access_token}
+    print(stkRequest['amount'])
     request = {
         "BusinessShortCode": LipanaMpesaPpassword.Business_short_code,
         "Password": LipanaMpesaPpassword.decode_password,
         "Timestamp": LipanaMpesaPpassword.lipa_time,
         "TransactionType": "CustomerBuyGoodsOnline",
-        "Amount": stkRequest['amount'],
+        "Amount": 1.00,
         "PartyA": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
         "PartyB": LipanaMpesaPpassword.Business_till_number,
         "PhoneNumber": stkRequest['phoneNumber'],  # replace with your phone number to get stk push
