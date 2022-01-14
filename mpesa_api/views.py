@@ -36,10 +36,10 @@ def auto_check_payment(request):
         return JsonResponse(dict(context))
     else:
         context = {
-            "stkStatus": data.stkStatus,
-            "customerMessage": data.statusReason,
+            "stkStatus": "Pending",
+            "customerMessage": "Waiting for customer to initiate payment",
             "paymentStatus": "Failed",
-            "statusReason": data.statusReason,
+            "statusReason":  "Waiting for customer to initiate payment",
         }
         return JsonResponse(dict(context))
 
