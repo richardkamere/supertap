@@ -218,6 +218,10 @@ def confirmation(request):
     mpesa_payment = json.loads(request.body)
     mpesaPayment = mpesa_payment['Body']
     stkCallback = mpesaPayment['stkCallback']
+
+
+    print(mpesaPayment)
+    print(stkCallback)
     #
     # firebaseToken = None;
     #
