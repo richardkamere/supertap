@@ -96,7 +96,7 @@ def lipa_na_mpesa_online(request):
                 customerMessage=response.json()['CustomerMessage'],
                 stkStatus="Success",
                 paymentStatus="Pending",
-                statusReason="Stk sent, Waiting for customer to complete payment",
+                statusReason="Payment has not been received",
                 txnId=stkRequest['txnId'],
                 firebase_token=stkRequest['firebaseToken']
             )
@@ -122,7 +122,7 @@ def lipa_na_mpesa_online(request):
                 amount=request['Amount'],
                 partyA=request['PartyA'],
                 partyB=request['PartyB'],
-                phoneNumber="0702931540",
+                phoneNumber=request['PhoneNumber'],
                 accountReference=request['AccountReference'],
                 transactionDesc=request['TransactionDesc'],
                 merchantRequestId=response.json()['requestId'],
@@ -191,10 +191,13 @@ def c2b_confirmation(request):
     mpesa_payment = json.loads(request.body)
 
     print(mpesa_payment)
+    print(mpesa_payment['MSISDN'])
+    print(mpesa_payment['TransAmount'])
+    print(mpesa_payment['BusinessShortCode'])
 
-    if not StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
-                                       businessShortCode=mpesa_payment['BusinessShortCode'],
-                                       paymentStatus="Success").order_by('-id')[0].exist():
+    if StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
+                                   businessShortCode=mpesa_payment['BusinessShortCode'],
+                                   paymentStatus="Success").order_by('-id')[0].exist():
         originalCall = \
             StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
                                         businessShortCode=mpesa_payment['BusinessShortCode'],
@@ -222,7 +225,8 @@ def c2b_confirmation(request):
 
 @csrf_exempt
 def confirmation(request):
-    # mpesa_body = request.body.decode('utf-8')
+    mpesa_body = request.body.decode('utf-8')
+    print(mpesa_body)
     # mpesa_payment = json.loads(mpesa_body)
     # mpesaPayment = mpesa_payment['Body']
     # stkCallback = mpesaPayment['stkCallback']
