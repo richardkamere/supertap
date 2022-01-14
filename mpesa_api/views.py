@@ -192,6 +192,8 @@ def c2b_confirmation(request):
     mpesa_body = request.body.decode('utf-8')
     mpesa_payment = json.loads(mpesa_body)
 
+    print(mpesa_payment.text)
+
     if not StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
                                        businessShortCode=mpesa_payment['BusinessShortCode'],
                                        paymentStatus="Success").order_by('-id')[0].exist():
