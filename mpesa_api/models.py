@@ -16,7 +16,7 @@ class BaseModel(models.Model):
 class StkPushCalls(BaseModel):
     businessShortCode = models.CharField(max_length=255, verbose_name="Short Code")
     transactionType = models.CharField(max_length=225)
-    amount = models.CharField(max_length=255, default="12")
+    amount = models.DecimalField(max_digits=30, default=0.00, decimal_places=2)
     partyA = models.CharField(max_length=225)
     partyB = models.CharField(max_length=255)
     phoneNumber = models.CharField(max_length=255, verbose_name="Phone Number")
