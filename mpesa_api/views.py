@@ -218,29 +218,21 @@ def confirmation(request):
     mpesa_payment = json.loads(request.body)
     mpesaPayment = mpesa_payment['Body']
     stkCallback = mpesaPayment['stkCallback']
+    merchantRequestId = stkCallback['MerchantRequestID']
+    checkoutRequestId = stkCallback['CheckoutRequestID']
+    stkRequest = StkPushCalls.objects.filter(checkoutRequestId=checkoutRequestId).order_by('-id')[0]
+    stkRequest.merchantRequestId = merchantRequestId
+    stkRequest.checkoutRequestId = checkoutRequestId
+    firebaseToken = stkRequest.firebase_token
 
-
-    print(mpesaPayment)
-    print(stkCallback)
-    #
-    # firebaseToken = None;
-    #
-    if stkCallback.__contains__('CallbackMetadata'):
-        merchantRequestId = stkCallback['MerchantRequestID']
-        checkoutRequestId = stkCallback['CheckoutRequestID']
-        stkRequest = StkPushCalls.objects.filter(checkoutRequestId=checkoutRequestId).order_by('-id')[0]
-        stkRequest.merchantRequestId = merchantRequestId
-        stkRequest.checkoutRequestId = checkoutRequestId
-        firebaseToken = stkRequest.firebase_token
-
-        if not stkCallback['ResponseCode'] == 0:
+    if not stkCallback['ResponseCode'] == 0:
             errorMessage = stkCallback['ResponseDescription']
             stkRequest.customerMessage = errorMessage
             stkRequest.stkStatus = "Failed"
             stkRequest.statusReason = errorMessage
             stkRequest.save()
 
-        elif not stkCallback['ResultCode'] == 0:
+    elif not stkCallback['ResultCode'] == 0:
 
             errorMessage = stkCallback['ResultDesc']
             stkRequest.customerMessage = errorMessage
@@ -248,7 +240,7 @@ def confirmation(request):
             stkRequest.statusReason = errorMessage
             stkRequest.save()
 
-        sendFailedMessage(message=stkRequest.customerMessage,
+    sendFailedMessage(message=stkRequest.customerMessage,
                           device_id=firebaseToken)
 
 
