@@ -186,7 +186,7 @@ def c2b_confirmation(request):
     print(mpesa_payment['TransAmount'])
     print(mpesa_payment['BusinessShortCode'])
 
-    if StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN']).order_by('-id')[0]:
+    if StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN']).exists():
         print("details exists ...")
         originalCall = \
             StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
