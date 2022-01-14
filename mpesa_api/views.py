@@ -215,9 +215,7 @@ def c2b_confirmation(request):
 
 @csrf_exempt
 def confirmation(request):
-    mpesa_body = request.body.decode('utf-8')
-    print(mpesa_body)
-    mpesa_payment = json.loads(mpesa_body)
+    mpesa_payment = json.loads(request.body)
     mpesaPayment = mpesa_payment['Body']
     stkCallback = mpesaPayment['stkCallback']
     #
