@@ -225,23 +225,15 @@ def confirmation(request):
     stkRequest.checkoutRequestId = checkoutRequestId
     firebaseToken = stkRequest.firebase_token
 
-    if not stkCallback['ResponseCode'] == 0:
-            errorMessage = stkCallback['ResponseDescription']
-            stkRequest.customerMessage = errorMessage
-            stkRequest.stkStatus = "Failed"
-            stkRequest.statusReason = errorMessage
-            stkRequest.save()
-
-    elif not stkCallback['ResultCode'] == 0:
-
-            errorMessage = stkCallback['ResultDesc']
-            stkRequest.customerMessage = errorMessage
-            stkRequest.stkStatus = "Success"
-            stkRequest.statusReason = errorMessage
-            stkRequest.save()
+    if not stkCallback['ResultCode'] == 0:
+        errorMessage = stkCallback['ResultDesc']
+        stkRequest.customerMessage = errorMessage
+        stkRequest.stkStatus = "Success"
+        stkRequest.statusReason = errorMessage
+        stkRequest.save()
 
     sendFailedMessage(message=stkRequest.customerMessage,
-                          device_id=firebaseToken)
+                      device_id=firebaseToken)
 
 
 @permission_classes((AllowAny,))
