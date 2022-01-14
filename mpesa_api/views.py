@@ -234,7 +234,7 @@ def confirmation(request):
         stkRequest.statusReason = errorMessage
         stkRequest.save()
 
-    sendFailedMessage(message=stkRequest.customerMessage,
+        sendFailedMessage(message=stkRequest.customerMessage,
                       device_id=firebaseToken)
 
 
