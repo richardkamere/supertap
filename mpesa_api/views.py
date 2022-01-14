@@ -21,7 +21,7 @@ def auto_check_payment(request):
     checkRequest = json.loads(request.body)
     data = StkPushCalls.objects.filter(txnId=checkRequest['txnId']).last()
 
-    if data and (data.paymentStatus == "Success" or data.stkStatus == "Success"):
+    if data and data.paymentStatus == "Success":
         context = {
             "stkStatus": data.stkStatus,
             "customerMessage": data.customerMessage,
@@ -37,7 +37,7 @@ def auto_check_payment(request):
     else:
         context = {
             "stkStatus": "Pending",
-            "customerMessage": "Waiting for customer to initiate payment",
+            "customerMessage": "Waiting for the customer to complete payment",
             "paymentStatus": "Failed",
             "statusReason":  "Waiting for customer to initiate payment",
         }
