@@ -13,7 +13,7 @@ from mpesa_api.serializers import UserSerializer
 User = get_user_model()
 from mpesa_api.models import StkPushCalls
 from mpesa_api.mpesa_credentials import MpesaAccessToken, LipanaMpesaPpassword, MpesaC2bCredential, sendSuccessMessage, \
-    sendFailedMessage
+    sendFailedMessage, sendingSms
 
 
 @csrf_exempt
@@ -203,10 +203,16 @@ def c2b_confirmation(request):
         originalCall.updated_at = mpesa_payment['TransTime']
         originalCall.businessShortCode = mpesa_payment['BusinessShortCode']
         originalCall.transactionType = mpesa_payment['TransactionType']
-        originalCall.transactionType = mpesa_payment['TransactionType']
         originalCall.save()
         sendSuccessMessage(account=originalCall.accountReference, amount=originalCall.amount,
                            device_id=originalCall.firebase_token)
+
+        username = mpesa_payment['FirstName'] + " " + mpesa_payment['LastName'] + " " + mpesa_payment['MiddleName'];
+
+        sendSms = mpesa_payment['TransID'] + " Confirmed." + " Ksh" + mpesa_payment[
+            'TransAmount'] + " received from " + username + " on " + mpesa_payment['TransTime']
+
+        sendingSms(message=sendSms)
 
     context = {
         "ResultCode": 0,

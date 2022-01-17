@@ -68,7 +68,6 @@ def sendSuccessMessage(**kwargs):
     }
     result = push_service.notify_single_device(registration_id=registration_id, data_message=data_message)
     print(result)
-    AfricaStalking().sendingSms()
 
 
 def sendFailedMessage(**kwargs):
@@ -88,27 +87,21 @@ def sendFailedMessage(**kwargs):
     print(result)
 
 
-class AfricaStalking:
-    sms = africastalking.SMS
+def sendingSms(**kwargs):
+    username = 'pesapalsms'
+    api_key = '3cf40ec0e88cad5f1fd10f79127966db1d0e1d338559f0f989c60ccbf9aa2369'
+    africastalking.initialize(username, api_key)
+    message = kwargs['message']
 
-    def sendingSms(self):
-        username = 'pesapalsms'
-        api_key = '3cf40ec0e88cad5f1fd10f79127966db1d0e1d338559f0f989c60ccbf9aa2369'
-        africastalking.initialize(username, api_key)
+    # Set your shortCode or senderId
+    sender = "PESAPAL"
 
-        # Set the numbers in international format
-        recipients = ["+254110609580"]
-        # Set your message
-        message = "This is a test sms"
-        # Set your shortCode or senderId
-        sender = "PESAPAL"
-
-        try:
-            response = africastalking.SMS.send(
-                'Hello, AT Ninja!',
-                ['+254110609580'],
-                'PESAPAL'
-            )
-            print(response)
-        except Exception as e:
-            print(f'Houston, we have a problem: {e}')
+    try:
+        response = africastalking.SMS.send(
+            message,
+            ['+254110609580'],
+            'PESAPAL'
+        )
+        print(response)
+    except Exception as e:
+        print(f'Houston, we have a problem: {e}')
