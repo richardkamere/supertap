@@ -213,7 +213,7 @@ def c2b_confirmation(request):
         tnxDate = datetime.strptime(mpesa_payment['TransTime'], '%Y%m%d%H%M%S')
 
         sendSms = mpesa_payment['TransID'] + " Confirmed." + " Ksh" + mpesa_payment[
-            'TransAmount'] + " received from " + username + " on " + tnxDate
+            'TransAmount'] + " received from " + username + " on " + str(tnxDate)
 
         sendingSms(message=sendSms)
 
