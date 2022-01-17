@@ -1,6 +1,8 @@
+import africastalking
 import requests
 import json
 
+import self as self
 from pyfcm import FCMNotification
 from requests.auth import HTTPBasicAuth
 from datetime import datetime
@@ -20,6 +22,7 @@ class MpesaC2bCredential:
     check_payment_status_url = safaricom_base_url + 'mpesa/c2b/v1/simulate'
     stk_push_url = safaricom_base_url + 'mpesa/stkpush/v1/processrequest'
     stk_push_callback_url = base_url + 'api/v1/c2b/confirmation'
+
 
 class MpesaAccessToken:
     def getAcessToken(self):
@@ -57,14 +60,16 @@ def sendSuccessMessage(**kwargs):
     data_message = {
         "is_payment": True,
         "amount": amount,
-        "payment_description": "Dear customer your payment for " + str(account) + "  " + str(amount) + " has been processed "
-                                                                                            "successfully",
+        "payment_description": "Dear customer your payment for " + str(account) + "  " + str(
+            amount) + " has been processed "
+                      "successfully",
         "title": "Transaction Successful",
         "status": "200",
         "is_mpesa": True
     }
     result = push_service.notify_single_device(registration_id=registration_id, data_message=data_message)
     print(result)
+    sendSuccessSms()
 
 
 def sendFailedMessage(**kwargs):
@@ -82,3 +87,21 @@ def sendFailedMessage(**kwargs):
     }
     result = push_service.notify_single_device(registration_id=registration_id, data_message=data_message)
     print(result)
+
+
+def sendSuccessSms(**kwargs):
+    username = 'pesapalsms'
+    api_key = '3cf40ec0e88cad5f1fd10f79127966db1d0e1d338559f0f989c60ccbf9aa2369'
+    africastalking.initialize(username, api_key)
+
+    # Set the numbers in international format
+    recipients = ["+254110609580"]
+    # Set your message
+    message = "This is a test sms"
+    # Set your shortCode or senderId
+    sender = "PESAPAL"
+    try:
+        response = self.sms.send(message, recipients, sender)
+        print(response)
+    except Exception as e:
+        print(f'Houston, we have a problem: {e}')
