@@ -210,7 +210,8 @@ def c2b_confirmation(request):
         username = mpesa_payment['FirstName'] + " " + mpesa_payment['LastName'] + " " + mpesa_payment['MiddleName'];
 
         sendSms = mpesa_payment['TransID'] + " Confirmed." + " Ksh" + mpesa_payment[
-            'TransAmount'] + " received from " + username + " on " + mpesa_payment['TransTime']
+            'TransAmount'] + " received from " + username + " on " + mpesa_payment['TransTime'].strftime(
+            '%Y-%m-%d') + " at " + mpesa_payment['TransTime'].strftime('%H:%M:%S')
 
         sendingSms(message=sendSms)
 
