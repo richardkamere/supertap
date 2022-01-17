@@ -39,7 +39,7 @@ def auto_check_payment(request):
             "stkStatus": "Pending",
             "customerMessage": "Waiting for the customer to complete payment",
             "paymentStatus": "Failed",
-            "statusReason":  "Waiting for customer to initiate payment",
+            "statusReason": "Waiting for customer to initiate payment",
         }
         return JsonResponse(dict(context))
 
@@ -187,9 +187,8 @@ def c2b_confirmation(request):
     print(mpesa_payment['BusinessShortCode'])
 
     if StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
-                                   businessShortCode=mpesa_payment['BusinessShortCode']).\
+                                   businessShortCode=mpesa_payment['BusinessShortCode']). \
             exclude(paymentStatus="Success").exists():
-
         print("details exists ...")
         originalCall = \
             StkPushCalls.objects.filter(phoneNumber=mpesa_payment['MSISDN'], amount=mpesa_payment['TransAmount'],
