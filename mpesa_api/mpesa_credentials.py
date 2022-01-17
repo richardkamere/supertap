@@ -89,6 +89,8 @@ def sendFailedMessage(**kwargs):
 
 
 class AfricaStalking:
+    sms = africastalking.SMS
+
     def sendingSms(self):
         username = 'pesapalsms'
         api_key = '3cf40ec0e88cad5f1fd10f79127966db1d0e1d338559f0f989c60ccbf9aa2369'
@@ -100,6 +102,7 @@ class AfricaStalking:
         message = "This is a test sms"
         # Set your shortCode or senderId
         sender = "PESAPAL"
+
         try:
             response = self.sms.send(message, recipients, sender)
             print(response)
