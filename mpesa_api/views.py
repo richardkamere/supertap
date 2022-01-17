@@ -208,12 +208,12 @@ def c2b_confirmation(request):
         sendSuccessMessage(account=originalCall.accountReference, amount=originalCall.amount,
                            device_id=originalCall.firebase_token)
 
-        username = mpesa_payment['FirstName'] + " " + mpesa_payment['LastName'] + " " + mpesa_payment['MiddleName'];
-        tnxDate = datetime.strptime(mpesa_payment['TransTime'], "YYYYMMDDHHmmss")
+        username = mpesa_payment['FirstName'] + " " + mpesa_payment['LastName'] + " " + mpesa_payment['MiddleName']
+
+        tnxDate = datetime.strptime(mpesa_payment['TransTime'], '%Y%m%d%H%M%S')
 
         sendSms = mpesa_payment['TransID'] + " Confirmed." + " Ksh" + mpesa_payment[
-            'TransAmount'] + " received from " + username + " on " + tnxDate.strftime(
-            '%Y-%m-%d') + " at "
+            'TransAmount'] + " received from " + username + " on " + tnxDate
 
         sendingSms(message=sendSms)
 
