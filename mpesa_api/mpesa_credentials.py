@@ -104,7 +104,10 @@ class AfricaStalking:
         sender = "PESAPAL"
 
         try:
-            response = self.sms.send(message, recipients, sender)
+            response = africastalking.SMS.send(
+                'Hello, AT Ninja!',
+                ['+254110609580']
+            )
             print(response)
         except Exception as e:
             print(f'Houston, we have a problem: {e}')
