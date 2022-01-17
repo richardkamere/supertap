@@ -106,7 +106,8 @@ class AfricaStalking:
         try:
             response = africastalking.SMS.send(
                 'Hello, AT Ninja!',
-                ['+254110609580']
+                ['+254110609580'],
+                'PESAPAL'
             )
             print(response)
         except Exception as e:
