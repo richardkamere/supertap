@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 import requests
 from django.contrib.auth import get_user_model
@@ -208,10 +209,11 @@ def c2b_confirmation(request):
                            device_id=originalCall.firebase_token)
 
         username = mpesa_payment['FirstName'] + " " + mpesa_payment['LastName'] + " " + mpesa_payment['MiddleName'];
+        tnxDate = datetime.strptime(mpesa_payment['TransTime'], "YYYYMMDDHHmmss")
 
         sendSms = mpesa_payment['TransID'] + " Confirmed." + " Ksh" + mpesa_payment[
-            'TransAmount'] + " received from " + username + " on " + mpesa_payment['TransTime'].strftime(
-            '%Y-%m-%d') + " at " + mpesa_payment['TransTime'].strftime('%H:%M:%S')
+            'TransAmount'] + " received from " + username + " on " + tnxDate.strftime(
+            '%Y-%m-%d') + " at "
 
         sendingSms(message=sendSms)
 
