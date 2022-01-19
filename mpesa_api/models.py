@@ -1,7 +1,3 @@
-import json
-from enum import Enum
-
-import requests
 from django.db import models
 
 
