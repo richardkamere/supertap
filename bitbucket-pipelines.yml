@@ -64,6 +64,7 @@ pipelines:
                   SERVER: $PRODUCTION_HOST
                   REMOTE_PATH: $FOLDER
                   LOCAL_PATH: '${BITBUCKET_CLONE_DIR}'
+
               - python3 manage.py makemigrations
               - python3 manage.py migrate
               - python3 manage.py test
