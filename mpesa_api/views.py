@@ -138,6 +138,7 @@ def lipa_na_mpesa_online(request):
                 "CustomerMessage": response.json()['errorMessage']
             }
 
+
             return JsonResponse(dict(context))
 
     else:
