@@ -133,6 +133,7 @@ def lipa_na_mpesa_online(request):
             if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
                 stkRequestV1.save()
 
+
             context = {
                 "ResponseCode": 1,
                 "CustomerMessage": response.json()['errorMessage']
