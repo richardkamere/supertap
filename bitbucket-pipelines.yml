@@ -64,3 +64,4 @@ pipelines:
                   SERVER: $PRODUCTION_HOST
                   REMOTE_PATH: $FOLDER
                   LOCAL_PATH: '/'
+                  echo deployed successfully
