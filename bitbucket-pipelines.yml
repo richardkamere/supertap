@@ -63,4 +63,3 @@ pipelines:
                   USER: $USER_NAME
                   SERVER: $PRODUCTION_HOST
                   REMOTE_PATH: $FOLDER
-                  LOCAL_PATH: '${BITBUCKET_CLONE_DIR}'
