@@ -58,16 +58,9 @@ pipelines:
           trigger: manual
           image: atlassian/default-image:3
           script:
-            # Substitute the values of environment variables to app.yaml
-            # https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html
-            - apt install -y gettext-base
-            - envsubst < app.yaml.template > app.yaml
-
-            # Deploy your Django app to the Google App Engine
-            # See more details https://bitbucket.org/atlassian/google-app-engine-deploy/src/master/
-            - pipe: atlassian/google-app-engine-deploy:0.7.3
-              variables:
-                KEY_FILE: $KEY_FILE
-                PROJECT: $PROJECT
-
-            # add your app DB migrations workflow if exists
+              - pipe: atlassian/scp-deploy:0.3.3
+                variables:
+                  USER: $USER_NAME
+                  SERVER: $PRODUCTION_HOST
+                  REMOTE_PATH: $FOLDER
+                  LOCAL_PATH: 'build/*'
