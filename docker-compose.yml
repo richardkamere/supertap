@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+
+  web:
+    build: .
+    restart: always
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 127.0.0.1:8000"
+    container_name: supertap
+    volumes:
+      - .:/supertap
+    ports:
+      - "8000:8000"
