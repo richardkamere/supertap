@@ -68,8 +68,7 @@ pipelines:
               - apt-get install python3-pip python3-dev -y
               - pip3 install --upgrade pip
               - pip3 install virtualenv
-              - apt install python3.8-venv
-              - python3 -m venv venv
+              - virtualenv venv
               - source venv/bin/activate
               - pip install -r requirements.txt
               - python3 manage.py makemigrations
