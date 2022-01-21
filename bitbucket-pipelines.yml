@@ -64,7 +64,8 @@ pipelines:
                   SERVER: $PRODUCTION_HOST
                   REMOTE_PATH: $FOLDER
                   LOCAL_PATH: '${BITBUCKET_CLONE_DIR}'
-              - pip install virtualenv
+              - apt install python3-pip python3-django
+              - apt install python3-venv
               - python3 -m venv venv
               - source venv/bin/activate
               - pip install -r requirements.txt
