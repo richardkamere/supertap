@@ -65,7 +65,7 @@ pipelines:
                   REMOTE_PATH: $FOLDER
                   LOCAL_PATH: '${BITBUCKET_CLONE_DIR}'
               - apt-get update
-              - apt-get install python3-pip python3-dev
+              - apt-get install python3-pip python3-dev -y
               - pip3 install --upgrade pip
               - pip3 install virtualenv
               - python3 -m venv venv
