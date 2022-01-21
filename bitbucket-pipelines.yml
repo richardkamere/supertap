@@ -8,7 +8,6 @@
 # For advanced cases, please, follow examples from the pipe's README https://bitbucket.org/atlassian/google-app-engine-deploy/src/master/README.md
 # Your environment variables should also be declared in the app.yaml.template.
 image: python:3.8
-
 # Workflow Configuration
 
 pipelines:
