@@ -252,7 +252,6 @@ def confirmation(request):
     }
     return JsonResponse(dict(context))
 
-
 @permission_classes((AllowAny,))
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
