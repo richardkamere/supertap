@@ -70,7 +70,6 @@ def lipa_na_mpesa_online(request):
     if not StkPushCalls.objects.filter(txnId=stkRequest['txnId'], paymentStatus="Success").exists():
         response = requests.post(api_url, json=request, headers=headers)
 
-        print(response.text)
         if response.status_code == 200:
             stkRequestV1 = StkPushCalls(
                 businessShortCode=request['BusinessShortCode'],
