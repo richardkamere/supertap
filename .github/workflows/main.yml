@@ -38,8 +38,8 @@ jobs:
         run: |
           python manage.py test
 
-      - name: Deploy DigitalOcean
-        uses: actions/ssh-action@v2
+      - name: Deploy DigitalOcean droplet via SSH action
+        uses: appleboy/ssh-action@v0.1.3
         with:
           host: ${{secrets.SSH_HOST}}
           key: ${{secrets.SSH_KEY}}
