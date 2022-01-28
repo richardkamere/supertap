@@ -47,7 +47,9 @@ jobs:
 
           script: |
             cd /var/www/python/cdci/supertap/
-            git checkout git@github.com:richardkamere/supertap.git
+            git init
+            git remote add origin https://github.com:richardkamere/supertap.git
+            git pull origin master
 
       - name: Install python staffs
         run: |
