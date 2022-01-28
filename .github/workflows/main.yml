@@ -48,4 +48,23 @@ jobs:
           script: |
             cd /var/www/python/cdci/supertap/
             git clone git@github.com:richardkamere/supertap.git
-            echo 'Deployment successful to digital ocean'
+
+      - name: Install python staffs
+        run: |
+          apt-get update
+          apt-get install python3-pip python3-dev -y
+          pip3 install --upgrade pip
+          python3 -m venv venv
+
+      - name: Activate Environment
+        run:  source venv/bin/activate
+
+      - name: Run project staff
+        run: |
+          pip install -r requirements.txt
+          python3 manage.py makemigrations
+          python3 manage.py migrate
+          python3 manage.py test
+          python3 manage.py runserver 178.128.205.106:8082
+
+
