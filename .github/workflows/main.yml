@@ -47,7 +47,7 @@ jobs:
 
           script: |
             cd /var/www/python/cdci/supertap/
-            git clone git@github.com:richardkamere/supertap.git
+            git checkout git@github.com:richardkamere/supertap.git
 
       - name: Install python staffs
         run: |
