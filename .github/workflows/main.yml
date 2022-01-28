@@ -46,6 +46,6 @@ jobs:
           username: ${{secrets.SSH_USERNAME}}
 
           script: |
-            cd /var/www/python/
+            cd /var/www/python/cdci/supertap/
             git clone git@github.com:richardkamere/supertap.git
             echo 'Deployment successful to digital ocean
