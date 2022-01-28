@@ -39,34 +39,41 @@ jobs:
           python manage.py test
 
       - name: Deploy DigitalOcean droplet via SSH action
-        uses: appleboy/ssh-action@v0.1.3
+        uses: appleboy/scp-action@master
+        env:
+          HOST: ${{secrets.SSH_HOST}}
+          KEY: ${{secrets.SSH_KEY}}
+          USERNAME: ${{secrets.SSH_USERNAME}}
+        with:
+          source: "."
+          target: "/var/www/python/cdci/supertap/"
+
+      - name: Executing remote command
+        uses: appleboy/ssh-action@master
         with:
           host: ${{secrets.SSH_HOST}}
-          key: ${{secrets.SSH_KEY}}
-          username: ${{secrets.SSH_USERNAME}}
+          USERNAME: ${{secrets.SSH_USERNAME }}
+          KEY: ${{secrets.SSH_KEY }}
 
-          script: |
-            cd /var/www/python/cdci/supertap/
-
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
-      - name: Install python staffs
-        run: |
-          apt-get update
-          apt-get install python3-pip python3-dev -y
-          pip3 install --upgrade pip
-          python3 -m venv venv
-
-      - name: Activate Environment
-        run:  source venv/bin/activate
-
-      - name: Run project staff
-        run: |
-          pip install -r requirements.txt
-          python3 manage.py makemigrations
-          python3 manage.py migrate
-          python3 manage.py test
-          python3 manage.py runserver 178.128.205.106:8082
-
-
+#      - name: Checkout the code
+#        uses: actions/checkout@v2
+#
+#      - name: Install python staffs
+#        run: |
+#          apt-get update
+#          apt-get install python3-pip python3-dev -y
+#          pip3 install --upgrade pip
+#          python3 -m venv venv
+#
+#      - name: Activate Environment
+#        run:  source venv/bin/activate
+#
+#      - name: Run project staff
+#        run: |
+#          pip install -r requirements.txt
+#          python3 manage.py makemigrations
+#          python3 manage.py migrate
+#          python3 manage.py test
+#          python3 manage.py runserver 178.128.205.106:8082
+#
+#
