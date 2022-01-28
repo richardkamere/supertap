@@ -37,3 +37,16 @@ jobs:
       - name: Run tests
         run: |
           python manage.py test
+
+      - name: Deploy DigitalOcean
+        uses: actions/ssh-action@v2
+        with:
+          host: ${{secrets.SSH_HOST}}
+          key: ${{secrets.SSH_KEY}}
+          username: ${{secrets.SSH_USERNAME}}
+
+          script: |
+            mkdir var/www/python/test
+            cd var/www/python/test
+            git clone git@github.com:richardkamere/supertap.git
+            echo 'Deployment successful to digital ocean'
